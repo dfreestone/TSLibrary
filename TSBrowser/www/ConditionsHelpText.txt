@@ -1,0 +1,30 @@
+<h1> Building a conditions file </h1>
+<br>
+<br>
+
+<p> Your conditions file contains all the information needed to uniquely identify your experiment, and the conditions of each animal in your experiment.
+
+<p> The conditions file serves two crucial purposes. First, it is used to create the macros that MedPC will run. Therefore, it needs to specify the load conditions for each box (including Set Values). Second, it is stored with the data itself and serves as a record of the experiment information that was in play on any particular day. This is why your conditions file will include both metadata about the experiment (e.g., the lab in which the study was run), and specific parameters to load into MedPC (e.g., the probability of a short trial on a switch task).
+
+<p> Your conditions file should be saved with the filename “*_conditions.csv” where * is a stand-in for your unique experiment ID. For example, “h_conditions.csv” is valid, while “conditions.csv” is not.
+
+<p> The first row in the file is for your own comments. We usually use them to give human-readable labels to the ‘D’ and ‘F’ values that get set in MedPC when the protocol is loaded.
+
+<p> The second row of your file is your actual header row. It contains the names of each of the columns. You must include the following
+
+<ol>
+  <li> Lab             - The lab in which the experiment was run (e.g., Freestone)
+  <li> Species         - The species of each animal (e.g., Mouse)
+  <li> Strain          - The strain of each animal (e.g., C57BL/6j)
+  <li> Sex             - The sex of each animal
+  <li> Arrival_Weights - The arrival weights of each animal
+  <li> Supplier	        - The supplier of each animal (e.g., Jax)
+  <li> Mouse           - The mouse ID (e.g., M017)
+  <li> Cabinet         - The cabinet that holds the boxes (e.g., A).
+  <li> Box             - The operant chamber in the cabinet that each animal will run in (e.g., 8)
+  <li> Protocol        - The name of a valid protocol (e.g., h_protocol)
+</ol>
+
+The Mouse, Cabinet, Box, and Protocol are used to create a series of macros that can be loaded into MedPC.
+
+<p> Any other column in your conditions file is either ignored or is either a ‘D’ or an ‘F’ value to be set when MedPC loads. For example, in our setup, the chambers run 24/7 and the houselight serves to control the light/dark cycle. The times at which the light turns on or off is determined by ‘D(9)’ and ‘D(19)’ in units of “seconds since midnight.” Any variables that need to be set to run the tasks is stored in the ‘F’ array. For example, setting the probability of a peak trial may be done by setting ‘F(13).’ These values are set when MedPC loads via the macro created from the conditions file. This is why the first row in the file is so useful. It gives you the ability to describe what these values are in a human-readable way.
