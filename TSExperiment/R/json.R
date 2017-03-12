@@ -17,10 +17,15 @@
 #' @export
 #' @examples
 DataListForJson <- function(df){
-jsonlist = list(subject=as.character(df$subject[1]),
-                time = df$time,
-                event = as.numeric(df$event))
-return(jsonlist)
+  jsonlist = list(subject=as.character(df$subject[1]),
+                  time = df$time,
+                  event = as.numeric(df$event))
+
+  if ("variable" %in% colnames(df)){
+    jsonlist = c(jsonlist, list(variable=df$variable))
+  }
+
+  return(jsonlist)
 }
 
 #' Write a single day's worth of Json Data
@@ -154,11 +159,14 @@ ReadJsonFile <- function(file){
     event = as.integer(unlist(json$data[[i]]$event, use.names=FALSE))
 
     df = dplyr::bind_rows(df, dplyr::data_frame(subject=subject, date=date, time=time, event=event))
-  }
 
+    if ("variable" %in% names(json$data[[i]])){
+      variable = as.integer(unlist(json$data[[i]]$variable, use.names=FALSE))
+      df = dplyr::mutate(df, variable = variable)
+    }
+  }
   df = df %>%
     dplyr::mutate(event = TSLib::convert_codes_to_events(event, eventcodes))
-
   return(df)
 }
 

@@ -24,7 +24,7 @@ habitest_load_file = function(file)
   col_names <- c("index", "time", "input_type", "input_id",
                  "event", "register", "unknown")
   df = read_csv(file, col_names = col_names, col_types = col_types)
-  col = ifelse(is.na(as.integer(df[1,6])), 4, 6)
+  col = 4 #ifelse(is.na(as.integer(df[1,4])), 6, 4)
   df %>%
     mutate(subject=as.integer(.[1,col]),
            protocol=as.character(.[2,col]),
