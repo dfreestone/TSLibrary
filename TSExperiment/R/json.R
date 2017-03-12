@@ -17,10 +17,15 @@
 #' @export
 #' @examples
 DataListForJson <- function(df){
-jsonlist = list(subject=as.character(df$subject[1]),
-                time = df$time,
-                event = as.numeric(df$event))
-return(jsonlist)
+  jsonlist = list(subject=as.character(df$subject[1]),
+                  time = df$time,
+                  event = as.numeric(df$event))
+
+  if ("variable" %in% colnames(df)){
+    jsonlist = c(jsonlist, variable=df$variable)
+  }
+
+  return(jsonlist)
 }
 
 #' Write a single day's worth of Json Data
