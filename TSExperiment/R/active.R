@@ -232,3 +232,24 @@ RecentExperimentActivity <- function(){
   return(length(files))
 }
 
+
+#' Email
+#'
+#' @param to_address List of email addresses
+#' @return NULL
+#' @export
+#' @examples
+EmailConfirm <- function(subject){
+  dropbox = DropBoxPaths()$LocalActiveExperimentPath
+  to_address = readLines(file.path(dropbox, "emails.txt"))
+  mailR::send.mail(from = "freestonelab@gmail.com",
+                   to = to_address,
+                   subject = "[Freestone-lab] Your mouse script has run.",
+                   body = " ",
+                   smtp = list(host.name = "smtp.gmail.com", port = 465,
+                               user.name = "freestonelab@gmail.com",
+                               passwd = "ForEmailAlerts", ssl = TRUE),
+                   authenticate = TRUE,
+                   send = TRUE)
+  return(NULL)
+}

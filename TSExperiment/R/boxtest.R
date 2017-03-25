@@ -133,23 +133,3 @@ CumulativeBlockedDeliveries <- function(df, return_ax=FALSE){
    return(df)
   }
 }
-
-#' Email
-#'
-#' @param to_address List of email addresses
-#' @return NULL
-#' @export
-#' @examples
-EmailConfirm <- function(to_address){
-  mailR::send.mail(from = "freestonelab@gmail.com",
-                   to = to_address,
-                   subject = "[Freestone-lab] Your mouse script has run.",
-                   body = " ",
-                   smtp = list(host.name = "smtp.gmail.com", port = 465,
-                               user.name = "freestonelab@gmail.com",
-                               passwd = "ForEmailAlerts", ssl = TRUE),
-                   authenticate = TRUE,
-                   send = TRUE)
-  return(NULL)
-}
-
