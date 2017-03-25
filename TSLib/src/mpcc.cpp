@@ -11,7 +11,7 @@ NumericVector mpcflushesc(NumericVector data, int nevents)
   int flush_end = nevents; // assume 1 chunk, change later.
 
   int flushsize_offset = 18;
-  int datastart_offset = 23;
+  int datastart_offset = 24; // TODO(David): This is 23 for the h experiment, 24 for k. Why?
 
   int flushsize_index = flush_start + flushsize_offset;
 

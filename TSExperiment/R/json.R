@@ -135,6 +135,52 @@ WriteActiveJson <- function(){
     lapply(WriteJsonDataFiles)
 }
 
+#' Write an experiment's Json files, after the experiment went inactive.
+#'
+#' @param path A path to a valid experiment folder (most likely inactive.)
+#' @return NULL
+#' @importFrom magrittr %>%
+#' @export
+#' @examples
+WriteJsonDataFilesFromInactiveExperiment<- function(path){
+  #TODO(David): This function is hacked from the WriteJsonDataFiles function because
+  #             I've found I've needed it twice. This should really be cleaned up.
+  dropbox = DropBoxPaths()$LocalActiveExperimentPath
+
+  experiment = ExperimentID(basename(path))
+  files = Sys.glob(file.path(path, "data", "mpc", paste0(experiment, "_*")))
+  if (length(files)<1){
+    return(NULL)
+  }
+
+  mpcpath = dirname(files)[1]
+  jsonpath = file.path(dirname(mpcpath), "json")
+  eventcodepath = file.path(dirname(dirname(mpcpath)), "experiment")
+
+  eventcodes = Sys.glob(file.path(eventcodepath, paste0(experiment, "_eventcodes.csv"))) %>%
+    append(file.path(dirname(dropbox), "system", "mouse_eventcodes.csv")) %>%
+    TSLib::read_eventcodes()
+
+  protocol = file.path(dirname(dirname(mpcpath)), "experiment", paste0(experiment, "_protocol.mpc")) %>%
+    readLines(encoding="UTF-8")
+
+  conditions = file.path(dirname(dirname(mpcpath)), "experiment", paste0(experiment, "_conditions.csv")) %>%
+    readLines(encoding="UTF-8")
+
+  result_ = files %>%
+    TSLib::mpc_load_files() %>%
+    dplyr::distinct() %>%
+    dplyr::group_by(subject, date) %>%
+    dplyr::do(jsonlist = DataListForJson(.)) %>%
+    dplyr::group_by(date) %>%
+    dplyr::do(result = WriteJsonDataFile(., jsonpath, eventcodes, protocol, conditions))
+
+  # NOTE(David): This is only useful if we need to archive...
+#  result_ = ArchiveMPC(mpcpath)
+}
+
+
+
 #' Read in a single json file
 #'
 #' @param file A json file to load
