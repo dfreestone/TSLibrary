@@ -2,7 +2,9 @@
 title: "Getting Started"
 author: "David M. Freestone, Mara Vinnik, & Cherie Doan"
 date: "March 25, 2017"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -72,8 +74,14 @@ Lastly, our setup has an _Inactive_ folder for completed projects, and a _temp_ 
 
 There are two eventcodes files, the general one is stored in the _system_ folder, and the experiment-specific one is stored in the *Active/ID_experiment/experiment* folder, as described above. Both of these files are simply csv files that store eventname, eventcode pairs. For example, here are a snapshot of the *mouse_eventcodes.csv* and *k_eventcodes.csv* csv files. 
 
+\centerline{\includegraphics[height=4in]{./img/mouseEventcodes.png}}
+\centerline{\includegraphics[height=2in]{./img/experimentEventcodes.png}}
+<img src="./img/mouseEventcodes.png" float="right" style="width: 200px;"/>
+<img src="./img/experimentEventcodes.png" float="left" style="width: 200px;"/>
+<!---
 ![Figure 6a. An example experiment eventcodes file](./img/experimentEventcodes.png)
 ![Figure 6b. An example mouse eventcodes file](./img/mouseEventcodes.png)
+-->
 
 The data itself is stored using the event code. This allows us to store the data directly from MedPC as time.event pairs. The number before the period in the raw data is the MedPC timestamp, and the number after the period is the event code. For example, a line in the MedPC file that reads 16735.021 is parsed at the period. The timestamp 16735 corrosponds to 167.35 seconds since the protocol was loaded, and the event code 21 corrosponds to an On_Left_Feeder event. That is, a pellet was delivered into the left hopper 167.35 seconds after the protocol was loaded.
 
