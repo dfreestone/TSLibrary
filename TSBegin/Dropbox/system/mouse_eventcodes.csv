@@ -1,0 +1,51 @@
+On_Left_Nosepoke, 1
+Off_Left_Nosepoke, 11
+On_Middle_Nosepoke, 2
+Off_Middle_Nosepoke, 12
+On_Right_Nosepoke, 3
+Off_Right_Nosepoke, 13
+On_Left_Pellet, 4
+Off_Left_Pellet, 14
+On_Middle_Pellet, 5
+Off_Middle_Pellet, 15
+On_Right_Pellet, 6
+Off_Right_Pellet, 16
+On_Left_Feeder, 21
+Off_Left_Feeder, 31
+On_Middle_Feeder, 22
+Off_Middle_Feeder, 32
+On_Right_Feeder, 23
+Off_Right_Feeder, 33
+On_Left_HopperLight, 24
+Off_Left_HopperLight, 34
+On_Middle_HopperLight, 25
+Off_Middle_HopperLight, 35
+On_Right_HopperLight, 26
+Off_Right_HopperLight, 36
+On_HouseLight, 27
+Off_HouseLight, 37
+On_Tone, 28
+Off_Tone, 38
+On_Fan, 29
+Off_Fan, 39
+On_FeedingPeriod1,41
+On_FeedingPeriod2,42
+On_FeedingPeriod3,43
+On_FeedingPeriod4,44
+On_FeedingPeriod5,45
+On_FeedingPeriod6,46
+On_FeedingPeriod7,47
+On_FeedingPeriod8,48
+On_Daytime, 49
+Off_FeedingPeriod1, 51
+Off_FeedingPeriod2, 52
+Off_FeedingPeriod3, 53
+Off_FeedingPeriod4, 54
+Off_FeedingPeriod5, 55
+Off_FeedingPeriod6, 56
+Off_FeedingPeriod7, 57
+Off_FeedingPeriod8, 58
+Off_Daytime, 59
+On_Close_Session, 61
+On_weight, 73
+Off_weight, 74
