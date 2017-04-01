@@ -244,7 +244,7 @@ EmailConfirm <- function(subject){
   to_address = readLines(file.path(dropbox, "emails.txt"))
   mailR::send.mail(from = "freestonelab@gmail.com",
                    to = to_address,
-                   subject = "[Freestone-lab] Your mouse script has run.",
+                   subject = subject,
                    body = " ",
                    smtp = list(host.name = "smtp.gmail.com", port = 465,
                                user.name = "freestonelab@gmail.com",
