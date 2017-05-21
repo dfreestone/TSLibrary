@@ -28,16 +28,11 @@ DropBoxPaths <- function(){
 
   if (file.exists(DropboxDB)){
     dropbox = jsonlite::read_json(DropboxDB)
-    LocalActiveExperimentPath = file.path(dropbox$personal$path, "Active")
+    LocalActiveExperimentPath = file.path(dropbox$personal$path, "lab", "experiments", "active")
     RemoteActiveExperimentPath = 'C:\\Users\\gallistellab\\Dropbox'
   } else {
     stop("No dropbox path on this computer")
   }
-
-  if (GLOBAL_DEBUG==TRUE){
-    LocalActiveExperimentPath = file.path("~", "Google Drive", "briefcase", "coding", "json_test", "Active")
-  }
-
   return(list(LocalActiveExperimentPath=LocalActiveExperimentPath,
               RemoteActiveExperimentPath=RemoteActiveExperimentPath))
 }
