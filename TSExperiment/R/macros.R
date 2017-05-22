@@ -36,7 +36,7 @@ WriteSubjectMacros <- function(df){
   }
   cabinetPath = file.path(dirname(macroPath), paste0("Cabinet", cabinet, ".mac"))
   macroPath = file.path(macroPath, submac_name)
-  savePath = paste0(pcdropbox, "\\", "Active", "\\", exptPath, "\\", "data", "\\", "mpc", "\\", expt, "_", mouse, ".999")
+  savePath = paste0(pcdropbox, "\\", "lab", "\\", "experiments", "\\", "active", "\\", exptPath, "\\", "data", "\\", "mpc", "\\", expt, "_", mouse, ".999")
 
   write(sprintf("LOAD BOX %d SUBJ %s EXPT %s GROUP 1 PROGRAM %s \r", box, mouse, expt, protocol), macroPath)
   write(sprintf("FILENAME BOX %d %s \r", box, savePath), macroPath, append=TRUE)
@@ -51,7 +51,7 @@ WriteSubjectMacros <- function(df){
     }
   }
 
-  loadMacroFrom = paste0(pcdropbox, "\\", "Active", "\\", "macros", "\\", "submacs", "\\", submac_name)
+  loadMacroFrom = paste0(pcdropbox, "\\", "lab", "\\", "experiments", "\\", "active", "\\", "macros", "\\", "submacs", "\\", submac_name)
   write(sprintf("PLAYMACRO %s \r", loadMacroFrom), cabinetPath, append=TRUE)
 
   return(TRUE)
