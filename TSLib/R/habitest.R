@@ -28,7 +28,7 @@ habitest_load_file = function(file)
   # NOTE(David): we have to get the column of the metadata dynamically
   #              because graphicstate change the column in an upgrade.
   #              (we ugraded in the winter of 2016-2017)
-  col = ifelse(df[1,2]=="Subject", 4, 6)
+  col = c(ifelse((!is.na(df[1,2])) & (df[1,2]=="Subject"), 4, 6))
   df %>%
     mutate(subject=as.character(.[1,col]),
            protocol=as.character(.[2,col]),
