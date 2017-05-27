@@ -22,7 +22,7 @@ mpc_load_files = function(files, resolution=0.01)
 #' @export
 #' @examples
 #' data = mpc_load_file(file)
-mpc_load_file = function(file, resolution=0.01, writeFarray=c(100, 110))
+mpc_load_file = function(file)
 {
   # as.numeric converts string names in NA by coercion, and outputs a warning.
   # suppress all warnings, for now, so that real warnings can be read later
@@ -35,15 +35,10 @@ mpc_load_file = function(file, resolution=0.01, writeFarray=c(100, 110))
     dplyr::group_by(flush) %>%
     dplyr::mutate(subject=raw[7],
                   date=paste0(raw[4], "/", raw[5], "/20", raw[6]),
-                  raw = as.numeric(raw),
-                  event=round(1000 * (raw - floor(raw)))) %>%
+                  timestamp = as.numeric(raw),
+                  event=round(1000 * (timestamp - floor(timestamp)))) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(variable = trialdef(event, writeFarray),
-                  variable = ifelse(variable & event!=writeFarray[1] & event!=writeFarray[2], raw, NA),
-                  event = ifelse(!is.na(variable), -1, event),
-                  time = ifelse(!is.na(variable), NA, resolution*floor(raw))) %>%
-    dplyr::filter(event!=0) %>%
-    dplyr::select(subject, date, time, event, variable)
+    dplyr::select(subject, date, timestamp, event)
 
   options(warn=oldw)
   return(df)
@@ -61,18 +56,46 @@ mpc_load_file = function(file, resolution=0.01, writeFarray=c(100, 110))
 #' data = find_files("~/Dropbox/Data/h/*.999") %>%
 #'        mpc_load_files() %>%
 #'        mpc_tidy(eventCodeFiles)
-mpc_tidy = function(df, eventcodes=NULL, files=NULL)
+mpc_tidy = function(df, resolution=0.01, eventcodes=NULL, files=NULL)
 {
   if (!is.null(files)) {
     eventcodes = read_eventcodes(files)
   }
 
-  df %>%
+  # convert to factors / dates
+  df = df %>%
+    dplyr::mutate(subject = factor(subject),
+                  date = lubridate::mdy(date))
+
+  # Find the write array indices
+  if (!is.null(eventcodes)){
+    eventcodes = bind_rows(eventcodes, data_frame(event="Variable", code=-1))
+    Farray_pattern = c((eventcodes %>% filter(event=="On_WriteVariables"))$code,
+                       (eventcodes %>% filter(event=="Off_WriteVariables"))$code)
+    df = df %>%
+      dplyr::group_by(subject, date) %>%
+      dplyr::mutate(variable = trialdef(event, Farray_pattern),
+                    between_variable = variable & event!=Farray_pattern[1] & event!=Farray_pattern[2],
+                    variable = ifelse(between_variable, timestamp, NA),
+                    timestamp = ifelse(between_variable, NA, timestamp),
+                    event = ifelse(between_variable, -1, event))
+  } # if
+
+  # Adjust timestamps and insert event codes
+  df = df %>%
     dplyr::mutate(event = convert_codes_to_events(event, eventcodes),
-                  subject = factor(subject),
-                  date = factor(date)) %>%
+                  time = ifelse(is.na(timestamp), NA, resolution*floor(timestamp))) %>%
     dplyr::arrange(subject, date) %>%
     dplyr::group_by(subject, date) %>%
     dplyr::mutate(time = adjust_timestamps(time)) %>%
-    dplyr::ungroup()
-}
+    dplyr::ungroup() %>%
+    dplyr::filter(!is.na(event))
+
+  if ("variable" %in% colnames(df)){
+    df = dplyr::select(df, subject, date, time, event, variable)
+  } else {
+    df = dplyr::select(df, subject, date, time, event)
+  }
+
+    return(df)
+} # mpc_tidy
