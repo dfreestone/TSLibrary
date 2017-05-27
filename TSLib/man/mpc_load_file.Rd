@@ -4,12 +4,14 @@
 \alias{mpc_load_file}
 \title{Load a single mpc file}
 \usage{
-mpc_load_file(file, resolution = 0.01)
+mpc_load_file(file, resolution = 0.01, writeFarray = c(100, 110))
 }
 \arguments{
 \item{file}{file to load}
 
 \item{resolution}{the time resolution}
+
+\item{writeFArray}{the event codes for the start and end of writing variables to the F array}
 }
 \value{
 data.frame of a habitest file

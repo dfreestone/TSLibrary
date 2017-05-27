@@ -125,7 +125,9 @@ ActiveExperiments <- function(){
       stop("One or more experiments are not valid")
     }
   }
-  return(possible_experiments[isValid %>% apply(2, all)])
+
+  experiments = possible_experiments[isValid %>% apply(2, all)]
+  return(experiments[!is.na(experiments)])
 }
 
 #' Return the conditions file
@@ -209,8 +211,7 @@ ReadActiveExperimentFiles <-function(){
   return(ActiveExperiments() %>%
            lapply(ReadActiveExperimentFile) %>%
            dplyr::bind_rows() %>%
-           dplyr::mutate(date = lubridate::mdy(date)))# %>%
-           #dplyr::filter(date == max(date)))
+           dplyr::mutate(date = lubridate::mdy(date)))
 }
 
 #' Returns the number of .999 files

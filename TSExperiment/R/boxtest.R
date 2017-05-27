@@ -1,4 +1,38 @@
-# Check to see if no data was written for > 6 hours
+# TODO(David): Check to see if no data was written for > 6 hours
+
+#' Find where a pellet offset comes before an onset
+#'
+#' @param df timestamped data file
+#' @return df the same timestamped data file
+#' @export
+#' @examples
+# sink(output_filename)
+#cat("\n\nHere are the cases where there was a Pellet Off event before a Pellet On event")
+#data %>% Pellet_Off_Before_On()
+#sink()
+Pellet_Off_Before_On <- function(df){
+  df = df %>%
+    dplyr::group_by(subject) %>%
+    dplyr::mutate(right_trial = TSLib::trialdef(event, c("On_Right_Feeder", "On_Right_Pellet")),
+                  left_trial = TSLib::trialdef(event, c("On_Left_Feeder", "On_Left_Pellet")))
+
+  left_df = df %>%
+    dplyr::filter(left_trial>0) %>%
+    dplyr::group_by(subject, left_trial) %>%
+    dplyr::summarize(left_pellet_off_before_on = any(event==paste0("Off_Left_Pellet"))) %>%
+    dplyr::group_by(subject) %>%
+    dplyr::summarize(left = sum(left_pellet_off_before_on))
+
+  right_df = df %>%
+    dplyr::filter(right_trial>0) %>%
+    dplyr::group_by(subject, right_trial) %>%
+    dplyr::summarize(right_pellet_off_before_on = any(event==paste0("Off_Right_Pellet"))) %>%
+    dplyr::group_by(subject) %>%
+    dplyr::summarize(right = sum(right_pellet_off_before_on))
+
+  return(dplyr::left_join(left_df, right_df, by='subject'))
+}
+
 
 #' Obtain and plot the detection latencies
 #'
@@ -7,12 +41,6 @@
 #' @export
 #' @examples
 DetectionLatency <- function(df, return_ax=FALSE){
-  trial_n = df %>%
-    dplyr::group_by(subject) %>%
-    dplyr::summarize(left_food = sum(event=="On_Left_Pellet", na.rm=TRUE),
-                     right_food = sum(event=="On_Right_Pellet", na.rm=TRUE))
-
-
   trial_left = df %>%
     dplyr::group_by(subject) %>%
     dplyr::mutate(trial = TSLib::trialdef(event, c("On_Left_Feeder", "On_Left_Pellet"))) %>%
@@ -62,13 +90,12 @@ DetectionLatency <- function(df, return_ax=FALSE){
 #' @export
 #' @examples
 CumulativeFoodAmount = function(df, return_ax=FALSE){
-
-  # This really should use On_x_Pellet rather than feeder...
   foodtime = df %>%
+    arrange(subject, date, time) %>%
+    group_by(subject, date) %>%
+    mutate(time = (time - time[1]) / (60*60)) %>%
     filter(event=="On_Left_Feeder" | event=="On_Right_Feeder") %>%
-    group_by(subject) %>%
-    mutate(time = (time - time[1]) / (60*60),
-           cumulative = 1:length(time),
+    mutate(cumulative = 1:length(time),
            foodamt = 0.02 * cumulative)
 
   dropbox = DropBoxPaths()$LocalActiveExperimentPath

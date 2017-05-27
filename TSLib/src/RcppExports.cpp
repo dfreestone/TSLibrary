@@ -57,16 +57,3 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-
-static const R_CallMethodDef CallEntries[] = {
-    {"TSLib_mpcflushesc", (DL_FUNC) &TSLib_mpcflushesc, 2},
-    {"TSLib_mpc2tecc", (DL_FUNC) &TSLib_mpc2tecc, 3},
-    {"TSLib_rasterc", (DL_FUNC) &TSLib_rasterc, 3},
-    {"TSLib_trialdefc", (DL_FUNC) &TSLib_trialdefc, 4},
-    {NULL, NULL, 0}
-};
-
-RcppExport void R_init_TSLib(DllInfo *dll) {
-    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
-    R_useDynamicSymbols(dll, FALSE);
-}
