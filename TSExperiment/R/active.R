@@ -234,13 +234,14 @@ RecentExperimentActivity <- function(){
 #' @return NULL
 #' @export
 #' @examples
-EmailConfirm <- function(subject){
+EmailConfirm <- function(subject, body=" ", attachments=NULL){
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
   to_address = readLines(file.path(dropbox, "emails.txt"))
   mailR::send.mail(from = "freestonelab@gmail.com",
                    to = to_address,
                    subject = subject,
-                   body = " ",
+                   body = body,
+                   attach.files = attachments,
                    smtp = list(host.name = "smtp.gmail.com", port = 465,
                                user.name = "freestonelab@gmail.com",
                                passwd = "ForEmailAlerts", ssl = TRUE),
