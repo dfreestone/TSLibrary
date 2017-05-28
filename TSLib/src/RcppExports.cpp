@@ -44,8 +44,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // trialdefc
-NumericVector trialdefc(NumericVector events, NumericVector pattern, int event_count, int pattern_count);
-RcppExport SEXP TSLib_trialdefc(SEXP eventsSEXP, SEXP patternSEXP, SEXP event_countSEXP, SEXP pattern_countSEXP) {
+NumericVector trialdefc(NumericVector events, NumericVector pattern, int event_count, int pattern_count, bool from_first);
+RcppExport SEXP TSLib_trialdefc(SEXP eventsSEXP, SEXP patternSEXP, SEXP event_countSEXP, SEXP pattern_countSEXP, SEXP from_firstSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -53,7 +53,21 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type pattern(patternSEXP);
     Rcpp::traits::input_parameter< int >::type event_count(event_countSEXP);
     Rcpp::traits::input_parameter< int >::type pattern_count(pattern_countSEXP);
-    rcpp_result_gen = Rcpp::wrap(trialdefc(events, pattern, event_count, pattern_count));
+    Rcpp::traits::input_parameter< bool >::type from_first(from_firstSEXP);
+    rcpp_result_gen = Rcpp::wrap(trialdefc(events, pattern, event_count, pattern_count, from_first));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"TSLib_mpcflushesc", (DL_FUNC) &TSLib_mpcflushesc, 2},
+    {"TSLib_mpc2tecc", (DL_FUNC) &TSLib_mpc2tecc, 3},
+    {"TSLib_rasterc", (DL_FUNC) &TSLib_rasterc, 3},
+    {"TSLib_trialdefc", (DL_FUNC) &TSLib_trialdefc, 5},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_TSLib(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

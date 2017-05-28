@@ -12,5 +12,6 @@ Imports:
     tidyverse(>= 1.0.0), 
     magrittr (>= 1.5),
     jsonlite (>= 1.2),
+    lubridate (>= 1.6.0),
     TSLib (>= 0.0.1)
 RoxygenNote: 6.0.1

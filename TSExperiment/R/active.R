@@ -210,8 +210,7 @@ ReadActiveExperimentFile <- function(experiment){
 ReadActiveExperimentFiles <-function(){
   return(ActiveExperiments() %>%
            lapply(ReadActiveExperimentFile) %>%
-           dplyr::bind_rows() %>%
-           dplyr::mutate(date = lubridate::mdy(date)))
+           dplyr::bind_rows())
 }
 
 #' Returns the number of .999 files

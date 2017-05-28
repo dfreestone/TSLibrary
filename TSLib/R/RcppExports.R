@@ -13,7 +13,7 @@ rasterc <- function(events, pattern, event_count) {
     .Call('TSLib_rasterc', PACKAGE = 'TSLib', events, pattern, event_count)
 }
 
-trialdefc <- function(events, pattern, event_count, pattern_count) {
-    .Call('TSLib_trialdefc', PACKAGE = 'TSLib', events, pattern, event_count, pattern_count)
+trialdefc <- function(events, pattern, event_count, pattern_count, from_first) {
+    .Call('TSLib_trialdefc', PACKAGE = 'TSLib', events, pattern, event_count, pattern_count, from_first)
 }
 

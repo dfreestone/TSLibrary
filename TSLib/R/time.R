@@ -9,9 +9,12 @@
 #' @importFrom magrittr %>%
 #' @export
 #' @examples
-adjust_timestamps <- function(time){
-  dt = time - lag(time, default=time[1])
-  dt = ifelse(is.na(dt), 0, dt)
-  dt = ifelse(dt<0, 0, dt)
+adjust_timestamps <- function(timestamp){
+  timestamp = zoo::na.locf(timestamp, na.rm=F)
+  dt = timestamp - lag(timestamp, default=timestamp[1])
+
+  # Negatives exist because of computer reboots
+  # Assume no actual time gap (the time gap cannot be known)
+  dt[dt<0] = 0
   return(cumsum(dt))
 }

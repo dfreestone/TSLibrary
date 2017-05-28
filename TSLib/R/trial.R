@@ -8,12 +8,13 @@
 #' @examples
 #' trial = trialdef(events, pattern)
 #trialdef = function(df, pattern)
-trialdef = function(events, pattern)
+trialdef = function(events, pattern, fromfirst=FALSE)
 {
   if (!is.numeric(events)){
     pattern = codesfor(events, pattern)
     events = as.numeric(events)
   }
   trialdefc(events, pattern,
-            length(events), length(pattern)-1)
+            length(events), length(pattern)-1,
+            fromfirst)
 }

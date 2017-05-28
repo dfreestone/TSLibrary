@@ -1,36 +1,87 @@
-# TODO(David): Check to see if no data was written for > 6 hours
+# TODO(David): There's something wrong with the timestamps!!
 
-#' Find where a pellet offset comes before an onset
-#'
-#' @param df timestamped data file
-#' @return df the same timestamped data file
-#' @export
-#' @examples
-# sink(output_filename)
-#cat("\n\nHere are the cases where there was a Pellet Off event before a Pellet On event")
-#data %>% Pellet_Off_Before_On()
-#sink()
-Pellet_Off_Before_On <- function(df){
+# Here's what DailyAnalysisFA.m does
+# 1. No new event for 6 hours.
+# 2. Anomolies in the medpc program (more ons than offs of the events, etc.)
+#     (TSdiagnostics('latest'))
+
+# 3. A table that includes the times of all pellet releases, the latency to detect it,
+#     and whether the IR beam was blocked at the time.
+# 4. Email alert contains the diagnostics in a table.
+# (5). In our case, a column of cumulative deliveries so we can compute the amount of food.
+
+pellet_diagnostics <- function(df){
+  df = data
+
   df = df %>%
-    dplyr::group_by(subject) %>%
-    dplyr::mutate(right_trial = TSLib::trialdef(event, c("On_Right_Feeder", "On_Right_Pellet")),
-                  left_trial = TSLib::trialdef(event, c("On_Left_Feeder", "On_Left_Pellet")))
+    dplyr::group_by(subject, date) %>%
+    dplyr::mutate(left_latencytrial = TSLib::trialdef(event, c("On_Left_Feeder", "On_Left_Pellet"), fromfirst=TRUE),
+                  right_latencytrial = TSLib::trialdef(event, c("On_Right_Feeder", "On_Right_Pellet"), fromfirst=TRUE),
+                  left_hopperblocked = TSLib::trialdef(event, c("On_Left_Pellet", "On_Left_Feeder", "Off_Left_Pellet")),
+                  right_hopperblocked = TSLib::trialdef(event, c("On_Right_Pellet", "On_Right_Feeder", "Off_Right_Pellet")))
 
-  left_df = df %>%
-    dplyr::filter(left_trial>0) %>%
-    dplyr::group_by(subject, left_trial) %>%
-    dplyr::summarize(left_pellet_off_before_on = any(event==paste0("Off_Left_Pellet"))) %>%
-    dplyr::group_by(subject) %>%
-    dplyr::summarize(left = sum(left_pellet_off_before_on))
+  # Latency for left hopper
+  df = df %>%
+    dplyr::group_by(subject, date, left_latencytrial) %>%
+    dplyr::mutate(left_latency = ifelse(left_latencytrial>0, 
+                                        tail(time, 1) - time[1], NA))
 
-  right_df = df %>%
-    dplyr::filter(right_trial>0) %>%
-    dplyr::group_by(subject, right_trial) %>%
-    dplyr::summarize(right_pellet_off_before_on = any(event==paste0("Off_Right_Pellet"))) %>%
-    dplyr::group_by(subject) %>%
-    dplyr::summarize(right = sum(right_pellet_off_before_on))
+  # Latency for right hopper
+  df = df %>%
+    dplyr::group_by(subject, date, right_latencytrial) %>%
+    dplyr::mutate(right_latency = ifelse(right_latencytrial>0,
+                                         tail(time, 1) - time[1], NA))
 
-  return(dplyr::left_join(left_df, right_df, by='subject'))
+  # Remove everything that's not a feeder.
+  df = df %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(event %in% c("On_Left_Feeder", "On_Right_Feeder",
+                               "Off_Left_Feeder", "Off_Right_Pellet",
+                               "On_Left_Pellet", "On_Right_Pellet",
+                               "Off_Left_Pellet", "Off_Right_Pellet"))
+
+df %>%
+  dplyr::group_by(subject, date) %>%
+  dplyr::summarize(n = 0.02 * sum(event %in% c("On_Left_Feeder", "On_Right_Feeder"))) %>%
+  ggplot() + 
+  labs(y="Food amount") + 
+  geom_hline(yintercept=3, size=1.3, color="grey40", linetype="dashed") + 
+  geom_bar(aes(x=subject, y=n), stat="identity")
+
+
+# Plot the detection latencies
+left_df = df %>%
+  dplyr::filter(event == "On_Left_Feeder") %>%
+  dplyr::group_by(subject, date) %>%
+  dplyr::mutate(mdn = median(left_latency, na.rm=T),
+                iqr = IQR(left_latency, na.rm=T)) #%>% #View()
+
+left_df %>%
+  ggplot() +
+  labs(y="median detection latency") + 
+  coord_cartesian(ylim=c(0, 2)) + 
+  geom_bar(aes(x=subject, y=mdn, group=subject), stat="identity", data=slice(left_df, 1)) + 
+  #geom_errorbar(aes(x=subject, ymin=mdn-iqr, ymax=mdn+iqr, group=subject), width=0) + 
+  geom_jitter(aes(x=subject, y=left_latency, group=subject), width=0.1) + 
+  geom_hline(yintercept=0.5, size=1.3, color="black", linetype="dashed")
+
+
+# Plot the detection latencies
+right_df = df %>%
+  dplyr::filter(event == "On_Right_Feeder") %>%
+  dplyr::group_by(subject, date) %>%
+  dplyr::mutate(mdn = median(right_latency, na.rm=T),
+                iqr = IQR(right_latency, na.rm=T)) #%>% #View()
+
+right_df %>%
+  ggplot() +
+  labs(y="median detection latency") + 
+  coord_cartesian(ylim=c(0, 2)) + 
+  geom_bar(aes(x=subject, y=mdn, group=subject), stat="identity", data=slice(right_df, 1)) + 
+  #geom_errorbar(aes(x=subject, ymin=mdn-iqr, ymax=mdn+iqr, group=subject), width=0) + 
+  geom_jitter(aes(x=subject, y=left_latency, group=subject), width=0.1) + 
+  geom_hline(yintercept=0.5, size=1.3, color="black", linetype="dashed")
+
 }
 
 

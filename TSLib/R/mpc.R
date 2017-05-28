@@ -9,7 +9,7 @@
 #'        mpc_load_files()
 mpc_load_files = function(files, resolution=0.01)
 {
-  dplyr::bind_rows(lapply(files, mpc_load_file, resolution=resolution))
+  dplyr::bind_rows(lapply(files, mpc_load_file))
 }
 
 #' Load a single mpc file
@@ -30,6 +30,9 @@ mpc_load_file = function(file)
   options(warn = -1)
 
   # TODO(David): Probably find a way to speed up the variable/value stuff...
+  # TODO(David): Below is NOT the writetime, its the time the program started.
+  #             it would be nice to get the write time.
+  #writetime = paste0(raw[11], ":", raw[12], ".", raw[13]),
   df = readr::read_csv(file, col_names=c("raw"), col_types="c") %>%
     dplyr::mutate(flush = mpcflushesc(as.numeric(.$raw), length(.$raw))) %>%
     dplyr::group_by(flush) %>%
@@ -82,14 +85,21 @@ mpc_tidy = function(df, resolution=0.01, eventcodes=NULL, files=NULL)
   } # if
 
   # Adjust timestamps and insert event codes
+  #   adjusting the timestamps is necessary because sometimes
+  #   [1] the timestamps reset because of overflow
+  #   [2] the timestamps reset because we rebooted medpc
+  #   this makes the timestamps unreliable for time-of-day estimation anyway
+  #   so convert things relative to the time since the start of the date
+  #   (which is time since the first event, this is often near the time of the
+  #    daytime onset, but does not have to be.)
   df = df %>%
-    dplyr::mutate(event = convert_codes_to_events(event, eventcodes),
-                  time = ifelse(is.na(timestamp), NA, resolution*floor(timestamp))) %>%
     dplyr::arrange(subject, date) %>%
     dplyr::group_by(subject, date) %>%
-    dplyr::mutate(time = adjust_timestamps(time)) %>%
-    dplyr::ungroup() %>%
-    dplyr::filter(!is.na(event))
+    dplyr::filter(event!=0) %>%
+    dplyr::mutate(timestamp = adjust_timestamps(floor(timestamp)),
+                  time = ifelse(event==0, NA, resolution*floor(timestamp)),
+                  event = convert_codes_to_events(event, eventcodes)) %>%
+    dplyr::ungroup()
 
   if ("variable" %in% colnames(df)){
     df = dplyr::select(df, subject, date, time, event, variable)

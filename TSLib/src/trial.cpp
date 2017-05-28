@@ -3,7 +3,7 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector trialdefc(NumericVector events, NumericVector pattern,
-                        int event_count, int pattern_count)
+                        int event_count, int pattern_count, bool from_first)
 {
 
   NumericVector trial(event_count);
@@ -17,7 +17,7 @@ NumericVector trialdefc(NumericVector events, NumericVector pattern,
 
   int event_index = 0;
   int pattern_index = 0;
-  int remove_index = -1; // TODO(David): Must add remove values
+  int remove_index = -1;
   int trial_number = 0;
   int start_index = 0;
   while (event_index <= event_count)
@@ -51,7 +51,7 @@ NumericVector trialdefc(NumericVector events, NumericVector pattern,
 
 
     // If you've found a new start you weren't looking for
-    else if ((pattern_index > 0) && (events[event_index]==pattern[0]))
+    else if ((!from_first) && (pattern_index > 0) && (events[event_index]==pattern[0]))
     {
       pattern_index = 0;
       --event_index;
