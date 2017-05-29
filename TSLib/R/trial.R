@@ -56,6 +56,7 @@ feeding_periods <- function(events){
 time_of_day <- function(date, time, event, anchor_time, anchor_event){
   # It is crucial to pick the most stable time you have,
   #   and it should be early in the day to detect failures that occur after.
+  require(lubridate)
 
   timeofday = make_datetime(year(date), month(date), day(date),
                             anchor_time[1], anchor_time[2])
@@ -73,21 +74,22 @@ time_of_day <- function(date, time, event, anchor_time, anchor_event){
 #' @examples
 #' out = diagnostics(events)
 diagnostics <- function(events){
+  require(dplyr)
   # TODO(David): Add feeder -> detection events?
   uevents = unique(events)
   on_events = as.character(uevents[grepl("On_", uevents)])
-  
+
   df = data_frame()
   for (e in on_events){
     pattern = c(e, gsub("On", "Off", e))
-    
+
     # number of on to off events found
     npairs =  max(trialdef(events, pattern))
-    
+
     # number of each event individually
     on_count = sum(events==pattern[1])
     off_count = sum(events==pattern[2])
-    
+
     df = bind_rows(df,
                    data_frame(event = e,
                               npairs = npairs,

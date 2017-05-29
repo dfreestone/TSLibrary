@@ -10,7 +10,9 @@
 #' @export
 #' @examples
 adjust_timestamps <- function(timestamp){
-  timestamp = zoo::na.locf(timestamp, na.rm=F)
+  require(zoo)
+  require(dplyr)
+  timestamp = na.locf(timestamp, na.rm=F)
   dt = timestamp - lag(timestamp, default=timestamp[1])
 
   # Negatives exist because of computer reboots

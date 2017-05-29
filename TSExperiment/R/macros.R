@@ -65,6 +65,7 @@ WriteSubjectMacros <- function(df){
 #' @export
 #' @examples
 WriteMacros <- function(conditions){
+  require(dplyr)
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
   macropath = file.path(dropbox, "macros")
 
@@ -72,8 +73,8 @@ WriteMacros <- function(conditions){
   unlink(macropath, recursive=TRUE)
 
   conditions %>%
-    dplyr::group_by(Mouse) %>%
-    dplyr::do(write=WriteSubjectMacros(.))
+    group_by(Mouse) %>%
+    do(write=WriteSubjectMacros(.))
 
   write("START BOXES 1 2 3 4 5 6 7 8", file.path(macropath, "CabinetA.mac"), append=TRUE)
   write("START BOXES 1 2 3 4 5 6 7 8", file.path(macropath, "CabinetB.mac"), append=TRUE)
@@ -89,5 +90,3 @@ WriteActiveMacros <- function(){
   ActiveConditions() %>%
     WriteMacros()
 }
-
-

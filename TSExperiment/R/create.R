@@ -11,7 +11,7 @@
 #' @examples
 CreateActiveExperiment <- function(name, dropbox, conditionsFile, protocolFile, eventcodesFile=NULL){
 
-  experiment = TSExperiment::ExperimentID(basename(protocolFile))
+  experiment = ExperimentID(basename(protocolFile))
   experimentFolderName = tolower(paste0(experiment, "_", gsub(" ", "_", name)))
   experimentFolder = file.path(dropbox, experimentFolderName)
 

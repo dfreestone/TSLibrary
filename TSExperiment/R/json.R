@@ -40,12 +40,13 @@ DataListForJson <- function(df){
 #' @export
 #' @examples
 WriteJsonDataFile <- function(df, path, eventcodes, protocol, conditions){
+  require(jsonlite)
   filename = file.path(path, paste0("Data_", gsub("/", "_", df$date[1]), ".txt"))
 
   eventcodes = as.list(eventcodes)
   json = list(date=df$date[1], data=df$jsonlist,
               protocol=protocol, conditions=conditions, eventcodes=eventcodes)
-  jsonlite::write_json(json, filename)
+  write_json(json, filename)
   return(NULL)
 }
 
@@ -57,8 +58,9 @@ WriteJsonDataFile <- function(df, path, eventcodes, protocol, conditions){
 #' @export
 #' @examples
 NextArchive <- function(mpcpath){
+  require(tools)
   archive_number = Sys.glob(file.path(mpcpath, "*")) %>%
-    lapply(function(f) as.integer(tools::file_ext(f))) %>%
+    lapply(function(f) as.integer(file_ext(f))) %>%
     unlist() %>%
     unique()
   return(ifelse(length(archive_number)<2, 1, 1+max(archive_number[archive_number<999])))
@@ -92,6 +94,8 @@ ArchiveMPC <- function(mpcpath){
 #' @export
 #' @examples
 WriteJsonDataFiles <- function(experiment){
+  require(TSLib)
+  require(dplyr)
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
 
   files = Sys.glob(file.path(dropbox, paste0(experiment, "_*"), "data", "mpc",
@@ -106,7 +110,7 @@ WriteJsonDataFiles <- function(experiment){
 
   eventcodes = Sys.glob(file.path(eventcodepath, paste0(experiment, "_eventcodes.csv"))) %>%
     append(file.path(dirname(dropbox), "system", "mouse_eventcodes.csv")) %>%
-    TSLib::read_eventcodes()
+    read_eventcodes()
 
   protocol = file.path(dirname(dirname(mpcpath)), "experiment", paste0(experiment, "_protocol.mpc")) %>%
     readLines(encoding="UTF-8")
@@ -115,11 +119,11 @@ WriteJsonDataFiles <- function(experiment){
     readLines(encoding="UTF-8")
 
   result_ = files %>%
-    TSLib::mpc_load_files() %>%
-    dplyr::group_by(subject, date) %>%
-    dplyr::do(jsonlist = DataListForJson(.)) %>%
-    dplyr::group_by(date) %>%
-    dplyr::do(result = WriteJsonDataFile(., jsonpath, eventcodes, protocol, conditions))
+    mpc_load_files() %>%
+    group_by(subject, date) %>%
+    do(jsonlist = DataListForJson(.)) %>%
+    group_by(date) %>%
+    do(result = WriteJsonDataFile(., jsonpath, eventcodes, protocol, conditions))
 
   result_ = ArchiveMPC(mpcpath)
 }
@@ -143,6 +147,8 @@ WriteActiveJson <- function(){
 #' @export
 #' @examples
 WriteJsonDataFilesFromInactiveExperiment<- function(path){
+  require(TSLib)
+  require(dplyr)
   #TODO(David): This function is hacked from the WriteJsonDataFiles function because
   #             I've found I've needed it twice. This should really be cleaned up.
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
@@ -159,7 +165,7 @@ WriteJsonDataFilesFromInactiveExperiment<- function(path){
 
   eventcodes = Sys.glob(file.path(eventcodepath, paste0(experiment, "_eventcodes.csv"))) %>%
     append(file.path(dirname(dropbox), "system", "mouse_eventcodes.csv")) %>%
-    TSLib::read_eventcodes()
+    read_eventcodes()
 
   protocol = file.path(dirname(dirname(mpcpath)), "experiment", paste0(experiment, "_protocol.mpc")) %>%
     readLines(encoding="UTF-8")
@@ -168,15 +174,15 @@ WriteJsonDataFilesFromInactiveExperiment<- function(path){
     readLines(encoding="UTF-8")
 
   result_ = files %>%
-    TSLib::mpc_load_files() %>%
-    dplyr::distinct() %>%
-    dplyr::group_by(subject, date) %>%
-    dplyr::do(jsonlist = DataListForJson(.)) %>%
-    dplyr::group_by(date) %>%
-    dplyr::do(result = WriteJsonDataFile(., jsonpath, eventcodes, protocol, conditions))
+    mpc_load_files() %>%
+    distinct() %>%
+    group_by(subject, date) %>%
+    do(jsonlist = DataListForJson(.)) %>%
+    group_by(date) %>%
+    do(result = WriteJsonDataFile(., jsonpath, eventcodes, protocol, conditions))
 
   # NOTE(David): This is only useful if we need to archive...
-#  result_ = ArchiveMPC(mpcpath)
+  #  result_ = ArchiveMPC(mpcpath)
 }
 
 
@@ -189,30 +195,32 @@ WriteJsonDataFilesFromInactiveExperiment<- function(path){
 #' @export
 #' @examples
 ReadJsonFile <- function(file){
-  json = jsonlite::read_json(file)
+  require(jsonlite)
+  require(dplyr)
+  json = read_json(file)
 
   date = unlist(json$date, use.names=FALSE)
   protocol = unlist(json$protocol, use.names=FALSE)
   conditions = unlist(json$conditions, use.names=FALSE)
-  eventcodes = dplyr::data_frame(event = unlist(json$eventcodes$event, use.names=FALSE),
+  eventcodes = data_frame(event = unlist(json$eventcodes$event, use.names=FALSE),
                           code = unlist(json$eventcodes$code, use.names=FALSE))
 
   n = length(json$data)
-  df = dplyr::data_frame()
+  df = data_frame()
   for (i in 1:n){
     subject = unlist(json$data[[i]]$subject, use.names=FALSE)
     time = unlist(json$data[[i]]$time, use.names=FALSE)
     event = as.integer(unlist(json$data[[i]]$event, use.names=FALSE))
 
-    df = dplyr::bind_rows(df, dplyr::data_frame(subject=subject, date=date, time=time, event=event))
+    df = bind_rows(df, data_frame(subject=subject, date=date, time=time, event=event))
 
     if ("variable" %in% names(json$data[[i]])){
       variable = as.integer(unlist(json$data[[i]]$variable, use.names=FALSE))
-      df = dplyr::mutate(df, variable = variable)
+      df = mutate(df, variable = variable)
     }
   }
   df = df %>%
-    dplyr::mutate(event = TSLib::convert_codes_to_events(event, eventcodes))
+    mutate(event = convert_codes_to_events(event, eventcodes))
   return(df)
 }
 
@@ -224,12 +232,13 @@ ReadJsonFile <- function(file){
 #' @export
 #' @examples
 ReadExperimentJson <-function(experiment){
+  require(dplyr)
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
 
-  result = Sys.glob(file.path(dropbox, paste0(experiment, "_*"), "data", "json", "*.txt")) %>%
+  result = Sys.glob(file.path(dirname(dropbox), "**", paste0(experiment, "_*"), "data", "json", "*.txt")) %>%
     lapply(ReadJsonFile) %>%
-    dplyr::bind_rows() %>%
-    dplyr::mutate(experiment = experiment)
+    bind_rows() %>%
+    mutate(experiment = experiment)
   return(result)
 }
 
@@ -240,10 +249,11 @@ ReadExperimentJson <-function(experiment){
 #' @export
 #' @examples
 ReadActiveJson <-function(){
+  require(dplyr)
   result = ActiveExperiments() %>%
     lapply(ReadExperimentJson) %>%
-    dplyr::bind_rows() %>%
-    dplyr::mutate(experiment = factor(experiment))
+    bind_rows() %>%
+    mutate(experiment = factor(experiment))
 }
 
 #' Write all the json files from all the mpc files (not just the active ones)
@@ -253,6 +263,8 @@ ReadActiveJson <-function(){
 #' @export
 #' @examples
 WriteAllJson <- function(mpcpath){
+  require(TSLib)
+  require(dplyr)
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
 
   files = Sys.glob(file.path(mpcpath, "*"))
@@ -267,16 +279,16 @@ WriteAllJson <- function(mpcpath){
   experiment = ExperimentID(basename(dirname(dirname(mpcpath))))
   eventcodes = Sys.glob(file.path(eventcodepath, paste0(experiment, "_eventcodes.csv"))) %>%
     append(file.path(dirname(dropbox), "system", "mouse_eventcodes.csv")) %>%
-    TSLib::read_eventcodes()
+    read_eventcodes()
 
   protocol = "NULL"
   conditions = "NULL"
 
   result_ = files %>%
-    TSLib::mpc_load_files() %>%
-    dplyr::distinct() %>%
-    dplyr::group_by(subject, date) %>%
-    dplyr::do(jsonlist = DataListForJson(.)) %>%
-    dplyr::group_by(date) %>%
-    dplyr::do(result = WriteJsonDataFile(., jsonpath, eventcodes, protocol, conditions))
+    mpc_load_files() %>%
+    distinct() %>%
+    group_by(subject, date) %>%
+    do(jsonlist = DataListForJson(.)) %>%
+    group_by(date) %>%
+    do(result = WriteJsonDataFile(., jsonpath, eventcodes, protocol, conditions))
 }

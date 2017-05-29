@@ -25,7 +25,8 @@ raster = function(event, pattern)
 #' raster(data, c("LeftLeverOn", "LeftLeverOff", "trial_end"))
 rasterplot = function(data, pattern, ax, color="blue")
 {
-
+  require(dplyr)
+  require(ggplot2)
   data = data %>%
     group_by(subject) %>%
     mutate(response = raster(event, pattern)) %>%

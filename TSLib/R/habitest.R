@@ -8,6 +8,7 @@
 #'        habitest_load_files()
 habitest_load_files = function(files)
 {
+  require(dplyr)
   bind_rows(lapply(files, habitest_load_file))
 }
 
@@ -20,6 +21,8 @@ habitest_load_files = function(files)
 #' data = habitest_load_file(file)
 habitest_load_file = function(file)
 {
+  require(readr)
+  require(dplyr)
   col_types = "ccccccc"
   col_names <- c("index", "time", "input_type", "input_id",
                  "event", "register", "unknown")

@@ -9,7 +9,8 @@
 #'        mpc_load_files()
 mpc_load_files = function(files, resolution=0.01)
 {
-  dplyr::bind_rows(lapply(files, mpc_load_file))
+  require(dplyr)
+  return(bind_rows(lapply(files, mpc_load_file)))
 }
 
 #' Load a single mpc file
@@ -24,6 +25,8 @@ mpc_load_files = function(files, resolution=0.01)
 #' data = mpc_load_file(file)
 mpc_load_file = function(file)
 {
+  require(readr)
+  require(dplyr)
   # as.numeric converts string names in NA by coercion, and outputs a warning.
   # suppress all warnings, for now, so that real warnings can be read later
   oldw <- getOption("warn")
@@ -33,15 +36,15 @@ mpc_load_file = function(file)
   # TODO(David): Below is NOT the writetime, its the time the program started.
   #             it would be nice to get the write time.
   #writetime = paste0(raw[11], ":", raw[12], ".", raw[13]),
-  df = readr::read_csv(file, col_names=c("raw"), col_types="c") %>%
-    dplyr::mutate(flush = mpcflushesc(as.numeric(.$raw), length(.$raw))) %>%
-    dplyr::group_by(flush) %>%
-    dplyr::mutate(subject=raw[7],
-                  date=paste0(raw[4], "/", raw[5], "/20", raw[6]),
-                  timestamp = as.numeric(raw),
-                  event=round(1000 * (timestamp - floor(timestamp)))) %>%
-    dplyr::ungroup() %>%
-    dplyr::select(subject, date, timestamp, event)
+  df = read_csv(file, col_names=c("raw"), col_types="c") %>%
+    mutate(flush = mpcflushesc(as.numeric(.$raw), length(.$raw))) %>%
+    group_by(flush) %>%
+    mutate(subject=raw[7],
+           date=paste0(raw[4], "/", raw[5], "/20", raw[6]),
+           timestamp = as.numeric(raw),
+           event=round(1000 * (timestamp - floor(timestamp)))) %>%
+    ungroup() %>%
+    select(subject, date, timestamp, event)
 
   options(warn=oldw)
   return(df)
@@ -61,14 +64,16 @@ mpc_load_file = function(file)
 #'        mpc_tidy(eventCodeFiles)
 mpc_tidy = function(df, resolution=0.01, eventcodes=NULL, files=NULL)
 {
+  require(dplyr)
+  require(lubridate)
   if (!is.null(files)) {
     eventcodes = read_eventcodes(files)
   }
 
   # convert to factors / dates
   df = df %>%
-    dplyr::mutate(subject = factor(subject),
-                  date = lubridate::mdy(date))
+    mutate(subject = factor(subject),
+           date = mdy(date))
 
   # Find the write array indices
   if (!is.null(eventcodes)){
@@ -76,12 +81,12 @@ mpc_tidy = function(df, resolution=0.01, eventcodes=NULL, files=NULL)
     Farray_pattern = c((eventcodes %>% filter(event=="On_WriteVariables"))$code,
                        (eventcodes %>% filter(event=="Off_WriteVariables"))$code)
     df = df %>%
-      dplyr::group_by(subject, date) %>%
-      dplyr::mutate(variable = trialdef(event, Farray_pattern),
-                    between_variable = variable & event!=Farray_pattern[1] & event!=Farray_pattern[2],
-                    variable = ifelse(between_variable, timestamp, NA),
-                    timestamp = ifelse(between_variable, NA, timestamp),
-                    event = ifelse(between_variable, -1, event))
+      group_by(subject, date) %>%
+      mutate(variable = trialdef(event, Farray_pattern),
+             between_variable = variable & event!=Farray_pattern[1] & event!=Farray_pattern[2],
+             variable = ifelse(between_variable, timestamp, NA),
+             timestamp = ifelse(between_variable, NA, timestamp),
+             event = ifelse(between_variable, -1, event))
   } # if
 
   # Adjust timestamps and insert event codes
@@ -93,19 +98,19 @@ mpc_tidy = function(df, resolution=0.01, eventcodes=NULL, files=NULL)
   #   (which is time since the first event, this is often near the time of the
   #    daytime onset, but does not have to be.)
   df = df %>%
-    dplyr::arrange(subject, date) %>%
-    dplyr::group_by(subject, date) %>%
-    dplyr::filter(event!=0) %>%
-    dplyr::mutate(timestamp = adjust_timestamps(floor(timestamp)),
-                  time = ifelse(event==0, NA, resolution*floor(timestamp)),
-                  event = convert_codes_to_events(event, eventcodes)) %>%
-    dplyr::ungroup()
+    arrange(subject, date) %>%
+    group_by(subject, date) %>%
+    filter(event!=0) %>%
+    mutate(timestamp = adjust_timestamps(floor(timestamp)),
+           time = ifelse(event==0, NA, resolution*floor(timestamp)),
+           event = convert_codes_to_events(event, eventcodes)) %>%
+    ungroup()
 
   if ("variable" %in% colnames(df)){
-    df = dplyr::select(df, subject, date, time, event, variable)
+    df = select(df, subject, date, time, event, variable)
   } else {
-    df = dplyr::select(df, subject, date, time, event)
+    df = select(df, subject, date, time, event)
   }
 
-    return(df)
+  return(df)
 } # mpc_tidy

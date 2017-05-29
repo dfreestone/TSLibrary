@@ -17,6 +17,7 @@ GLOBAL_DEBUG = FALSE
 #' @export
 #' @examples
 DropBoxPaths <- function(){
+  require(jsonlite)
   #TODO(David): Fix this ugly hack
   if (Sys.info()['sysname'] == "Windows"){
     user = Sys.info()["user"]
@@ -27,7 +28,7 @@ DropBoxPaths <- function(){
   }
 
   if (file.exists(DropboxDB)){
-    dropbox = jsonlite::read_json(DropboxDB)
+    dropbox = read_json(DropboxDB)
     LocalActiveExperimentPath = file.path(dropbox$personal$path, "lab", "experiments", "active")
     RemoteActiveExperimentPath = 'C:\\Users\\gallistellab\\Dropbox'
   } else {
@@ -80,6 +81,7 @@ ExperimentPath <- function(experiment){
 #' @export
 #' @examples
 ActiveExperiments <- function(){
+  require(magrittr)
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
 
   valid_conditions = Sys.glob(file.path(dropbox, "*", "experiment", "*_conditions.csv")) %>%
@@ -113,7 +115,7 @@ ActiveExperiments <- function(){
   colnames(valid_experiments) = possible_experiments
 
   isValid = valid_experiments %>%
-    apply(1, function(x) {magrittr::equals(x, possible_experiments)}) %>%
+    apply(1, function(x) {equals(x, possible_experiments)}) %>%
     t()
 
   if(!all(isValid)){
@@ -138,8 +140,10 @@ ActiveExperiments <- function(){
 #' @export
 #' @examples
 ReadConditionsFile <- function(File){
-  df = suppressMessages(readr::read_csv(File, skip=1)) %>%
-    dplyr::mutate(expt = basename(dirname(dirname(File))))
+  require(readr)
+  require(dplyr)
+  df = suppressMessages(read_csv(File, skip=1)) %>%
+    mutate(expt = basename(dirname(dirname(File))))
   return(df)
 }
 
@@ -150,18 +154,19 @@ ReadConditionsFile <- function(File){
 #' @export
 #' @examples
 ActiveConditions <- function(){
+  require(dplyr)
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
   active = ActiveExperiments()
 
   conditions = Sys.glob(file.path(dropbox, paste0(active, "_*"), "experiment", "*_conditions.csv")) %>%
     lapply(ReadConditionsFile) %>%
-    dplyr::bind_rows()
+    bind_rows()
 
   duplicates = conditions %>%
-    dplyr::group_by(Cabinet, Box) %>%
-    dplyr::summarize(isDup = n()>1) %>%
-    dplyr::ungroup() %>%
-    dplyr::filter(isDup == TRUE)
+    group_by(Cabinet, Box) %>%
+    summarize(isDup = n()>1) %>%
+    ungroup() %>%
+    filter(isDup == TRUE)
 
   if (nrow(duplicates)>0){
     print(duplicates)
@@ -181,6 +186,7 @@ ActiveConditions <- function(){
 #' @export
 #' @examples
 ReadActiveExperimentFile <- function(experiment){
+  require(TSLib)
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
 
   files = Sys.glob(file.path(dropbox, paste0(experiment, "_*"), "data", "mpc",
@@ -194,11 +200,11 @@ ReadActiveExperimentFile <- function(experiment){
 
   eventcodes = Sys.glob(file.path(eventcodepath, paste0(experiment, "_eventcodes.csv"))) %>%
     append(file.path(dirname(dropbox), "system", "mouse_eventcodes.csv")) %>%
-    TSLib::read_eventcodes()
+    read_eventcodes()
 
   return(files %>%
-           TSLib::mpc_load_files() %>%
-           TSLib::mpc_tidy(eventcodes=eventcodes))
+           mpc_load_files() %>%
+           mpc_tidy(eventcodes=eventcodes))
 }
 
 #' Read all the .999 files from all active experiments
@@ -208,9 +214,10 @@ ReadActiveExperimentFile <- function(experiment){
 #' @export
 #' @examples
 ReadActiveExperimentFiles <-function(){
+  require(dplyr)
   return(ActiveExperiments() %>%
            lapply(ReadActiveExperimentFile) %>%
-           dplyr::bind_rows())
+           bind_rows())
 }
 
 #' Returns the number of .999 files
@@ -235,17 +242,18 @@ RecentExperimentActivity <- function(){
 #' @export
 #' @examples
 EmailConfirm <- function(subject, body=" ", attachments=NULL){
+  require(mailR)
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
   to_address = readLines(file.path(dropbox, "emails.txt"))
-  mailR::send.mail(from = "freestonelab@gmail.com",
-                   to = to_address,
-                   subject = subject,
-                   body = body,
-                   attach.files = attachments,
-                   smtp = list(host.name = "smtp.gmail.com", port = 465,
-                               user.name = "freestonelab@gmail.com",
-                               passwd = "ForEmailAlerts", ssl = TRUE),
-                   authenticate = TRUE,
-                   send = TRUE)
+  send.mail(from = "freestonelab@gmail.com",
+            to = to_address,
+            subject = subject,
+            body = body,
+            attach.files = attachments,
+            smtp = list(host.name = "smtp.gmail.com", port = 465,
+                        user.name = "freestonelab@gmail.com",
+                        passwd = "ForEmailAlerts", ssl = TRUE),
+            authenticate = TRUE,
+            send = TRUE)
   return(NULL)
 }

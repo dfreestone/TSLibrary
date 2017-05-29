@@ -6,7 +6,8 @@
 #' @examples
 read_eventcodes = function(Files)
 {
-  dplyr::bind_rows(lapply(Files, read_eventcode))
+  require(dplyr)
+  bind_rows(lapply(Files, read_eventcode))
 }
 
 #' Load a single file of event codes
@@ -17,7 +18,8 @@ read_eventcodes = function(Files)
 #' @examples
 read_eventcode = function(File)
 {
-  readr::read_csv(File, col_names=c("event", "code"), col_types="ci")
+  require(readr)
+  read_csv(File, col_names=c("event", "code"), col_types="ci")
 }
 
 #' Convert numeric event codes to named event codes
