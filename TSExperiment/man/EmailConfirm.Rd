@@ -4,7 +4,7 @@
 \alias{EmailConfirm}
 \title{Email}
 \usage{
-EmailConfirm(subject)
+EmailConfirm(subject, body = " ", attachments = NULL)
 }
 \arguments{
 \item{to_address}{List of email addresses}

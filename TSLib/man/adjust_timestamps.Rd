@@ -6,7 +6,7 @@
  When the time is reset in mpc (e.g, if we restart), time intervals are messed up.
  This fixes them by assuming zero delay after the restart.}
 \usage{
-adjust_timestamps(time)
+adjust_timestamps(timestamp)
 }
 \arguments{
 \item{time}{a vector of timestamps}

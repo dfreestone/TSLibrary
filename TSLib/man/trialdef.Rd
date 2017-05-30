@@ -4,7 +4,7 @@
 \alias{trialdef}
 \title{Return trial numbers}
 \usage{
-trialdef(events, pattern)
+trialdef(events, pattern, fromfirst = FALSE)
 }
 \arguments{
 \item{events}{event codes}

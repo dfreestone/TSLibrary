@@ -4,7 +4,7 @@
 \alias{mpc_load_file}
 \title{Load a single mpc file}
 \usage{
-mpc_load_file(file, resolution = 0.01, writeFarray = c(100, 110))
+mpc_load_file(file)
 }
 \arguments{
 \item{file}{file to load}

@@ -4,7 +4,7 @@
 \alias{mpc_tidy}
 \title{Cleanup mpc data.}
 \usage{
-mpc_tidy(df, eventcodes = NULL, files = NULL)
+mpc_tidy(df, resolution = 0.01, eventcodes = NULL, files = NULL)
 }
 \arguments{
 \item{df}{data.frame of loaded mpc files}

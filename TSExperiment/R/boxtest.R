@@ -40,6 +40,12 @@
 
 
 
+#' Perform a boxtest
+#'
+#' @return NULL
+#' @importFrom magrittr %>%
+#' @export
+#' @examples
 Boxtest <- function(){
   require(dplyr)
   require(TSLib)
