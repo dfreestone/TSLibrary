@@ -26,18 +26,15 @@ trialdef = function(events, pattern, fromfirst=FALSE)
 #' @examples
 #' periods = feeding_periods(events)
 feeding_periods <- function(events){
-  # Ensure unique feeding period IDs by offsetting them.
-  #   (10*feeding period works as the offset because there cannot be
-  #    more than 9 feeding periods in a day.)
   uevents = unique(events)
-  feeding_events = as.character(uevents[grepl("On_FeedingPeriod", uevents)])
-
+  feeding_events = as.character(uevents[grepl("On_FeedingPeriod",
+                                              uevents)])
   trial = rep(0, length(events))
-  for (e in feeding_events){
+  for (e in feeding_events) {
     pattern = c(e, gsub("On", "Off", e))
-    offset = 10*as.numeric(substr(e, nchar(e), nchar(e)))
-    tmp =  offset * trialdef(events, pattern)
-    trial = ifelse(tmp>0, tmp, trial)
+    period = as.numeric(substr(e, nchar(e), nchar(e)))
+    tmp = trialdef(events, pattern)
+    trial = ifelse(tmp > 0, period, trial)
   }
   return(trial)
 }

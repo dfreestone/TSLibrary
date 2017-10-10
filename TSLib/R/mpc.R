@@ -69,7 +69,7 @@ mpc_tidy = function(df, resolution=0.01, eventcodes=NULL, files=NULL)
   if (!is.null(files)) {
     eventcodes = read_eventcodes(files)
   }
-
+  
   # convert to factors / dates
   df = df %>%
     mutate(subject = factor(subject),

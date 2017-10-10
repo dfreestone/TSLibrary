@@ -31,6 +31,8 @@
 #   |mean  |sd       |median |iqr
 #   |12.54 |37.49    |2      |10
 #
+# TODO(David): Duration of blocked pellets
+#
 # The number of discrepencies between the on and offs
 #   |mean  |sd     |median |iqr | max | min
 #   |0.18  |0.50   |0      |0   |  3  | -1
@@ -80,6 +82,12 @@ Boxtest <- function(){
   # ---------------- #
   # Read Data        #
   # ---------------- #
+  # DEBUG with known sessions (in case there aren't 0.999 files)
+  # files = "/Users/dmf025/Dropbox/lab/experiments/active/k_time_vs_magnitude/data/mpc/*.042"
+  # file = "/Users/dmf025/Dropbox/lab/experiments/system/mouse_eventcodes.csv"
+  # data = Sys.glob(files) %>%
+  #   mpc_load_files() %>%
+  #   mpc_tidy(file=file)
   data = ReadActiveExperimentFiles()
   recent_date = max(data$date)
 
