@@ -29,7 +29,8 @@ DropBoxPaths <- function(){
 
   if (file.exists(DropboxDB)){
     dropbox = read_json(DropboxDB)
-    LocalActiveExperimentPath = file.path(dropbox$personal$path, "lab", "experiments", "active")
+    LocalActiveExperimentPath = file.path(ifelse(!is.null(dropbox$personal$path), dropbox$personal$path, dropbox$business$path),
+                                          "lab", "experiments", "active")
     RemoteActiveExperimentPath = 'C:\\Users\\gallistellab\\Dropbox'
   } else {
     stop("No dropbox path on this computer")
