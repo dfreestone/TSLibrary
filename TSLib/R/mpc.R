@@ -64,14 +64,13 @@ mpc_load_file = function(file)
 #'        mpc_tidy(eventCodeFiles)
 mpc_tidy = function(df, resolution=0.01, eventcodes=NULL, files=NULL)
 {
-  require(dplyr)
-  require(lubridate)
+  needs(magrittr, dplyr, lubridate)
   if (!is.null(files)) {
     eventcodes = read_eventcodes(files)
   }
-  
+
   # convert to factors / dates
-  df = df %>%
+  df %<>%
     mutate(subject = factor(subject),
            date = mdy(date))
 
@@ -80,7 +79,7 @@ mpc_tidy = function(df, resolution=0.01, eventcodes=NULL, files=NULL)
     eventcodes = bind_rows(eventcodes, data_frame(event="Variable", code=-1))
     Farray_pattern = c((eventcodes %>% filter(event=="On_WriteVariables"))$code,
                        (eventcodes %>% filter(event=="Off_WriteVariables"))$code)
-    df = df %>%
+    df %<>%
       group_by(subject, date) %>%
       mutate(variable = trialdef(event, Farray_pattern),
              between_variable = variable & event!=Farray_pattern[1] & event!=Farray_pattern[2],
@@ -97,14 +96,18 @@ mpc_tidy = function(df, resolution=0.01, eventcodes=NULL, files=NULL)
   #   so convert things relative to the time since the start of the date
   #   (which is time since the first event, this is often near the time of the
   #    daytime onset, but does not have to be.)
-  df = df %>%
+  df %<>%
     arrange(subject, date) %>%
     group_by(subject, date) %>%
     filter(event!=0) %>%
     mutate(timestamp = adjust_timestamps(floor(timestamp)),
-           time = ifelse(event==0, NA, resolution*floor(timestamp)),
-           event = convert_codes_to_events(event, eventcodes)) %>%
+           time = ifelse(event==0, NA, resolution*floor(timestamp))) %>%
     ungroup()
+
+  if (!is.null(eventcodes)){
+    df %<>%
+      mutate(event = convert_codes_to_events(event, eventcodes))
+  }
 
   if ("variable" %in% colnames(df)){
     df = select(df, subject, date, time, event, variable)

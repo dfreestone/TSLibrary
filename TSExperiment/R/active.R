@@ -82,7 +82,7 @@ ExperimentPath <- function(experiment){
 #' @export
 #' @examples
 ActiveExperiments <- function(){
-  require(magrittr)
+  needs(magrittr)
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
 
   valid_conditions = Sys.glob(file.path(dropbox, "*", "experiment", "*_conditions.csv")) %>%
@@ -187,7 +187,7 @@ ActiveConditions <- function(){
 #' @export
 #' @examples
 ReadActiveExperimentFile <- function(experiment){
-  require(TSLib)
+  needs(TSLib)
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
 
   files = Sys.glob(file.path(dropbox, paste0(experiment, "_*"), "data", "mpc",
@@ -215,7 +215,7 @@ ReadActiveExperimentFile <- function(experiment){
 #' @export
 #' @examples
 ReadActiveExperimentFiles <-function(){
-  require(dplyr)
+  needs(dplyr)
   return(ActiveExperiments() %>%
            lapply(ReadActiveExperimentFile) %>%
            bind_rows())
@@ -233,28 +233,4 @@ RecentExperimentActivity <- function(){
   files = Sys.glob(file.path(dropbox, paste0(experiments, "_*"), "data", "mpc",
                              paste0(experiments, "_*.999")))
   return(length(files))
-}
-
-
-#' Email
-#'
-#' @param to_address List of email addresses
-#' @return NULL
-#' @export
-#' @examples
-EmailConfirm <- function(subject, body=" ", attachments=NULL){
-  require(mailR)
-  dropbox = DropBoxPaths()$LocalActiveExperimentPath
-  to_address = readLines(file.path(dropbox, "emails.txt"))
-  send.mail(from = "freestonelab@gmail.com",
-            to = to_address,
-            subject = subject,
-            body = body,
-            attach.files = attachments,
-            smtp = list(host.name = "smtp.gmail.com", port = 465,
-                        user.name = "freestonelab@gmail.com",
-                        passwd = "ForEmailAlerts", ssl = TRUE),
-            authenticate = TRUE,
-            send = TRUE)
-  return(NULL)
 }

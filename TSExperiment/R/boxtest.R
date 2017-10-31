@@ -49,9 +49,7 @@
 #' @export
 #' @examples
 Boxtest <- function(){
-  require(dplyr)
-  require(TSLib)
-  require(ggplot2)
+  needs(tidyverse, ggplot2, TSLib)
 
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
   figure_path = file.path(dropbox, "output")
@@ -60,7 +58,7 @@ Boxtest <- function(){
   # Thresholds for the boxtest
   # TODO(David): Move this to the caller or to a file?
   anchor_event = "Off_Daytime"
-  anchor_time = c(10, 30)
+  anchor_time = c(21, 0)
 
   # Values chosen based on the "h" experiment (see above)
   min_food_per_day = 2.8           # grams
@@ -311,18 +309,6 @@ Boxtest <- function(){
     ggsave(file.path(figure_path, "detection_latencies.pdf"),
                     dpi=600, height=9, width=9, units="in", device=cairo_pdf)
 
-  ggplot() +
-    theme(text = element_text(size=18)) +
-    labs(x="detection latency", y="cumulative fraction", title=paste0("date: ", recent_date)) +
-    coord_cartesian(xlim=c(0, 1)) +
-    geom_vline(aes(xintercept=0.5), size=0.5, linetype="dashed", data=filter(feeding_periods, startsWith(as.character(event), "On_"))) +
-    geom_line(aes(x=time, y=p), size=1.2, color="#84c3ff", data=left_latencies) +
-    geom_line(aes(x=time, y=p), size=1.2, color="#ff7ff6", data=right_latencies) +
-    facet_wrap(~subject) +
-    ggsave(file.path(figure_path, "detection_latencies_cumulative.pdf"),
-                    dpi=600, height=9, width=9, units="in", device=cairo_pdf)
-
-
 
   # ---------------- #
   # Clean up         #
@@ -333,11 +319,12 @@ Boxtest <- function(){
               round(Sys.time() - start_time, digits=3)))
   sink()
 
-  EmailConfirm(sprintf("[Freestone-lab] Boxtest results: %s",
-                       ifelse(all_tests_passed, "OK.", "FAILED.")),
-               body=sprintf(paste(readLines(output_filename, encoding="UTF-8"), collapse="\n")),
-               attachments=c(file.path(figure_path, "detection_latencies.pdf"),
-                             file.path(figure_path, "blocked_deliveries.pdf"),
-                             file.path(figure_path, "food_amounts.pdf")))
+  SendMail(sprintf("Boxtest results: %s", ifelse(all_tests_passed, "OK.", "FAILED.")),
+               body=sprintf(paste(readLines(output_filename, encoding="UTF-8"), collapse="\n")))
+
+# TODO(David): Get the attachements to work
+#               attachments=c(file.path(figure_path, "detection_latencies.pdf"),
+#                             file.path(figure_path, "blocked_deliveries.pdf"),
+#                             file.path(figure_path, "food_amounts.pdf")))
 
 }

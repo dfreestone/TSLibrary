@@ -57,7 +57,7 @@ time_of_day <- function(date, time, event, anchor_time, anchor_event){
 
   timeofday = make_datetime(year(date), month(date), day(date),
                             anchor_time[1], anchor_time[2])
-  timefromanchor = time = time - time[which(event==anchor_event)]
+  timefromanchor = time - time[which(event==anchor_event)]
   timeofday = update(timeofday, seconds=timefromanchor)
 
   return(timeofday)

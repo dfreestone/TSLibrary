@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // mpcflushesc
 NumericVector mpcflushesc(NumericVector data, int nevents);
-RcppExport SEXP TSLib_mpcflushesc(SEXP dataSEXP, SEXP neventsSEXP) {
+RcppExport SEXP _TSLib_mpcflushesc(SEXP dataSEXP, SEXP neventsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -19,7 +19,7 @@ END_RCPP
 }
 // mpc2tecc
 NumericMatrix mpc2tecc(NumericVector mpc, int nevents, double resolution);
-RcppExport SEXP TSLib_mpc2tecc(SEXP mpcSEXP, SEXP neventsSEXP, SEXP resolutionSEXP) {
+RcppExport SEXP _TSLib_mpc2tecc(SEXP mpcSEXP, SEXP neventsSEXP, SEXP resolutionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -32,7 +32,7 @@ END_RCPP
 }
 // rasterc
 NumericVector rasterc(NumericVector events, NumericVector pattern, int event_count);
-RcppExport SEXP TSLib_rasterc(SEXP eventsSEXP, SEXP patternSEXP, SEXP event_countSEXP) {
+RcppExport SEXP _TSLib_rasterc(SEXP eventsSEXP, SEXP patternSEXP, SEXP event_countSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -45,7 +45,7 @@ END_RCPP
 }
 // trialdefc
 NumericVector trialdefc(NumericVector events, NumericVector pattern, int event_count, int pattern_count, bool from_first);
-RcppExport SEXP TSLib_trialdefc(SEXP eventsSEXP, SEXP patternSEXP, SEXP event_countSEXP, SEXP pattern_countSEXP, SEXP from_firstSEXP) {
+RcppExport SEXP _TSLib_trialdefc(SEXP eventsSEXP, SEXP patternSEXP, SEXP event_countSEXP, SEXP pattern_countSEXP, SEXP from_firstSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -57,4 +57,17 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(trialdefc(events, pattern, event_count, pattern_count, from_first));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_TSLib_mpcflushesc", (DL_FUNC) &_TSLib_mpcflushesc, 2},
+    {"_TSLib_mpc2tecc", (DL_FUNC) &_TSLib_mpc2tecc, 3},
+    {"_TSLib_rasterc", (DL_FUNC) &_TSLib_rasterc, 3},
+    {"_TSLib_trialdefc", (DL_FUNC) &_TSLib_trialdefc, 5},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_TSLib(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }
