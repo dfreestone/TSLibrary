@@ -58,7 +58,7 @@ Boxtest <- function(){
   # Thresholds for the boxtest
   # TODO(David): Move this to the caller or to a file?
   anchor_event = "Off_Daytime"
-  anchor_time = c(21, 0)
+  anchor_time = c(20, 0)
 
   # Values chosen based on the "h" experiment (see above)
   min_food_per_day = 2.8           # grams

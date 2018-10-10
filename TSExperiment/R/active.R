@@ -30,7 +30,7 @@ DropBoxPaths <- function(){
   if (file.exists(DropboxDB)){
     dropbox = read_json(DropboxDB)
     LocalActiveExperimentPath = file.path(ifelse(!is.null(dropbox$personal$path), dropbox$personal$path, dropbox$business$path),
-                                          "lab", "experiments", "active")
+                                          "lab", "experiments")
     RemoteActiveExperimentPath = 'C:\\Users\\gallistellab\\Dropbox'
   } else {
     stop("No dropbox path on this computer")
@@ -58,7 +58,7 @@ ExperimentID <- function(experiment){
 #' @export
 #' @examples
 ExperimentName <- function(experiment){
-  dropbox = DropBoxPaths()$LocalActiveExperimentPath
+  dropbox = file.path(DropBoxPaths()$LocalActiveExperimentPath, "experiments")
   return(basename(Sys.glob(file.path(dropbox, paste0(experiment, "_*")))))
 }
 
@@ -70,7 +70,7 @@ ExperimentName <- function(experiment){
 #' @export
 #' @examples
 ExperimentPath <- function(experiment){
-  dropbox = DropBoxPaths()$LocalActiveExperimentPath
+  dropbox = file.path(DropBoxPaths()$LocalActiveExperimentPath, "experiments")
   return(Sys.glob(file.path(dropbox, paste0(experiment, "_*"))))
 }
 
@@ -83,54 +83,57 @@ ExperimentPath <- function(experiment){
 #' @examples
 ActiveExperiments <- function(){
   needs(magrittr)
-  dropbox = DropBoxPaths()$LocalActiveExperimentPath
+  dropbox = file.path(DropBoxPaths()$LocalActiveExperimentPath, "experiments")
 
-  valid_conditions = Sys.glob(file.path(dropbox, "*", "experiment", "*_conditions.csv")) %>%
-    dirname() %>%
-    dirname() %>%
-    basename() %>%
-    ExperimentID()
+  active_experiments = Sys.glob(file.path(dropbox, "*", "ACTIVE.txt"))
 
-  valid_protocols = Sys.glob(file.path(dropbox, "*", "experiment", paste0(valid_conditions, "_protocol.mpc")))  %>%
-    dirname() %>%
+  valid_conditions = active_experiments %>%
     dirname() %>%
     basename() %>%
     ExperimentID()
 
+  # TODO(David): Validate the path structure (fix what's commented out below)
+  return(valid_conditions)
 
-  valid_mpcfolder = Sys.glob(file.path(dropbox, "*", "data", "mpc")) %>%
-    dirname() %>%
-    dirname() %>%
-    basename() %>%
-    ExperimentID()
-
-  valid_jsonfolder = Sys.glob(file.path(dropbox, "*", "data", "json")) %>%
-    dirname() %>%
-    dirname() %>%
-    basename() %>%
-    ExperimentID()
-
-  valid_experiments = rbind(valid_conditions, valid_protocols, valid_mpcfolder, valid_jsonfolder)
-  possible_experiments = unique(c(valid_experiments))
-
-  colnames(valid_experiments) = possible_experiments
-
-  isValid = valid_experiments %>%
-    apply(1, function(x) {equals(x, possible_experiments)}) %>%
-    t()
-
-  if(!all(isValid)){
-    print(isValid)
-
-    if (GLOBAL_DEBUG==TRUE){
-      warning("One or more experiments are not valid")
-    } else{
-      stop("One or more experiments are not valid")
-    }
-  }
-
-  experiments = possible_experiments[isValid %>% apply(2, all)]
-  return(experiments[!is.na(experiments)])
+  # valid_protocols = Sys.glob(file.path(dropbox, "*", "experiment", paste0(valid_conditions, "_protocol.mpc")))  %>%
+  #   dirname() %>%
+  #   dirname() %>%
+  #   basename() %>%
+  #   ExperimentID()
+#
+  # valid_mpcfolder = Sys.glob(file.path(dropbox, "*", "data", "mpc")) %>%
+  #   dirname() %>%
+  #   dirname() %>%
+  #   basename() %>%
+  #   ExperimentID()
+#
+  # valid_jsonfolder = Sys.glob(file.path(dropbox, "*", "data", "json")) %>%
+  #   dirname() %>%
+  #   dirname() %>%
+  #   basename() %>%
+  #   ExperimentID()
+#
+  # valid_experiments = rbind(valid_conditions, valid_protocols, valid_mpcfolder, valid_jsonfolder)
+  # possible_experiments = unique(c(valid_experiments))
+#
+  # #colnames(valid_experiments) = possible_experiments
+  # isValid = valid_experiments %>%
+  #   apply(1, function(x) {equals(x, possible_experiments)}) %>%
+  #   t()
+#
+  # if(!all(isValid)){
+  #   print(isValid)
+#
+  #   if (GLOBAL_DEBUG==TRUE){
+  #     warning("One or more experiments are not valid")
+  #   } else{
+  #     stop("One or more experiments are not valid")
+  #   }
+  # }
+#
+  # experiments = possible_experiments[isValid %>% apply(2, all)]
+#
+  # return(experiments[!is.na(experiments)])
 }
 
 #' Return the conditions file
@@ -143,7 +146,7 @@ ActiveExperiments <- function(){
 ReadConditionsFile <- function(File){
   require(readr)
   require(dplyr)
-  df = suppressMessages(read_csv(File, skip=1)) %>%
+  df = suppressMessages(read_csv(File, skip=0)) %>%
     mutate(expt = basename(dirname(dirname(File))))
   return(df)
 }
@@ -156,10 +159,12 @@ ReadConditionsFile <- function(File){
 #' @examples
 ActiveConditions <- function(){
   require(dplyr)
-  dropbox = DropBoxPaths()$LocalActiveExperimentPath
-  active = ActiveExperiments()
+  dropbox = file.path(DropBoxPaths()$LocalActiveExperimentPath, "experiments")
 
-  conditions = Sys.glob(file.path(dropbox, paste0(active, "_*"), "experiment", "*_conditions.csv")) %>%
+  active_experiments = Sys.glob(file.path(dropbox, "*", "ACTIVE.txt")) %>%
+    dirname()
+
+  conditions = Sys.glob(file.path(active_experiments, "experiment", "*_conditions.csv")) %>%
     lapply(ReadConditionsFile) %>%
     bind_rows()
 

@@ -1,21 +1,12 @@
 Package: TSLib
 Type: Package
-Title: Analysis Tools for Timestamped Behavioral Data
+Title: Library for working with timestamped behavioral data
 Version: 0.1.0
-Author: David Freestone
-Maintainer: David Freestone <dmf025@bucknell.edu>
-Description: These tools are specific to operating on timestamped behavioral
-    data These timestampes are usually time in seconds from the start of a session.
-    They differ from other timestamped data because the events at each timestamp
-    come from different categories (i.e, present a stimulus, collect a response)
-License: GPL-2
-Encoding: UTF-8
-LazyData: true
-Imports: 
-    Rcpp (>= 0.12.7), 
-    tidyverse(>= 1.0.0), 
-    lazyeval (>= 0.2.0),
-    digest (>= 0.6.10),
-    magrittr (>= 1.5)
+Date: 2018-10-09
+Author: David M. Freestone
+Maintainer: David M. Freestone <freestoned@wpunj.edu>
+Description: A series of functions that make it easy to work with timestamped
+         behvaioral data.
+License: GPL (>= 2)
+Imports: Rcpp (>= 0.12.19)
 LinkingTo: Rcpp
-RoxygenNote: 6.0.1

@@ -78,7 +78,7 @@ NextArchive <- function(mpcpath){
 ArchiveMPC <- function(mpcpath){
   archive_number = NextArchive(mpcpath)
 
-  jsonpath = file.path(dirname(mpcpath), "json")
+  #jsonpath = file.path(dirname(mpcpath), "json")
 
   current_filenames = Sys.glob(file.path(mpcpath, "*.999"))
   new_filenames = current_filenames %>%
