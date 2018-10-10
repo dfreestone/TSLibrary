@@ -32,7 +32,7 @@ mpc_load_file <- function(file) {
   #             it would be nice to get the write time.
   # writetime = paste0(raw[11], ":", raw[12], ".", raw[13]),
   df <- readr::read_csv(file, col_names = c("raw"), col_types = "c") %>%
-    #dplyr::mutate(flush = mpcflushesc(as.numeric(.$raw), length(.$raw))) %>%
+    dplyr::mutate(flush = mpcflushesc(as.numeric(.$raw), length(.$raw))) %>%
     dplyr::group_by(flush) %>%
     dplyr::mutate(
       subject = raw[7],
