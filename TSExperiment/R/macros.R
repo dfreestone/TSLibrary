@@ -67,7 +67,7 @@ WriteSubjectMacros <- function(df){
 WriteMacros <- function(conditions){
   require(dplyr)
   dropbox = DropBoxPaths()$LocalActiveExperimentPath
-  macropath = file.path(dropbox, "system", "macros")
+  macropath = file.path(dropbox, 'system', 'macros')
 
   # Delete the macros, if they already exist
   unlink(macropath, recursive=TRUE)
@@ -78,6 +78,7 @@ WriteMacros <- function(conditions){
 
   write("START BOXES 1 2 3 4 5 6 7 8", file.path(macropath, "CabinetA.mac"), append=TRUE)
   write("START BOXES 1 2 3 4 5 6 7 8", file.path(macropath, "CabinetB.mac"), append=TRUE)
+  write("START BOXES 1 2 3 4 5 6 7 8", file.path(macropath, "CabinetC.mac"), append=TRUE)
 }
 
 #' Write the macros for all active experiments

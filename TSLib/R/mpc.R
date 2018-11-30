@@ -82,7 +82,7 @@ mpc_tidy <- function(df, resolution = 0.01, eventcodes = NULL, files = NULL) {
 
   # convert to factors / dates
   df %<>%
-    mutate(
+    dplyr::mutate(
       subject = factor(subject),
       date = lubridate::mdy(date),
       raw = as.numeric(raw),
@@ -103,20 +103,20 @@ mpc_tidy <- function(df, resolution = 0.01, eventcodes = NULL, files = NULL) {
        (eventcodes %>% filter(event == "Off_WriteVariables"))$code
      )
      df %<>%
-       group_by(subject, date) %>%
-       mutate(on_write = trialdef(possible_event, Farray_pattern, fromfirst = TRUE)) %>%
-       group_by(subject, date, on_write) %>%
-       mutate(index = 1:n(),
+       dplyr::group_by(subject, date) %>%
+       dplyr::mutate(on_write = trialdef(possible_event, Farray_pattern, fromfirst = TRUE)) %>%
+       dplyr::group_by(subject, date, on_write) %>%
+       dplyr::mutate(index = 1:n(),
               between_variable = ifelse((on_write > 0) & (index != 1) & (index != n()),
                                         TRUE, FALSE),
               variable = ifelse(between_variable, raw, NA),
               possible_event = ifelse(between_variable, -1, possible_event)) %>%
-       ungroup()
+       dplyr::ungroup()
    } # if
 
   df %<>%
-    filter((possible_event > 0) | (possible_event == -1)) %>%
-    mutate(time = possible_time,
+    dplyr::filter((possible_event > 0) | (possible_event == -1)) %>%
+    dplyr::mutate(time = possible_time,
            event = possible_event)
 
   # NOTE(David): The adjusting timestamps is no longer needed after 2017.
@@ -140,13 +140,13 @@ mpc_tidy <- function(df, resolution = 0.01, eventcodes = NULL, files = NULL) {
 
   if (!is.null(eventcodes)) {
     df %<>%
-      mutate(event = convert_codes_to_events(event, eventcodes))
+      dplyr::mutate(event = convert_codes_to_events(event, eventcodes))
   }
 
   if ("variable" %in% colnames(df)) {
-    df <- select(df, subject, box, date, time, event, variable)
+    df <- dplyr::select(df, subject, box, date, time, event, variable)
   } else {
-    df <- select(df, subject, box, date, time, event)
+    df <- dplyr::select(df, subject, box, date, time, event)
   }
 
   options(warn = oldw)
