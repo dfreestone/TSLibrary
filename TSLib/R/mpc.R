@@ -48,7 +48,7 @@ mpc_load_file <- function(file) {
     ) %>%
     dplyr::ungroup() %>%
     dplyr::select(subject, box, date, raw)
-
+ 
   # If we issue a flush command (any of them), it does not seal the array. The
   #   result are loads of zeros at the end of the array, that really mess up the
   #   mpcflushesc algorithm, since the number of elements is not written to the disk
@@ -73,7 +73,7 @@ mpc_load_file <- function(file) {
 #' data = find_files("~/Dropbox/Data/h/*.999") %>%
 #'        mpc_load_files() %>%
 #'        mpc_tidy(eventCodeFiles)
-mpc_tidy <- function(df, resolution = 0.01, eventcodes = NULL, files = NULL) {
+mpc_tidy <- function(df, resolution = 0.01, files = NULL, variable_names = NA) {
 
   # as.numeric converts string names in NA by coercion, and outputs a warning.
   # suppress all warnings, for now, so that real warnings can be read later
@@ -99,18 +99,20 @@ mpc_tidy <- function(df, resolution = 0.01, eventcodes = NULL, files = NULL) {
    if (!is.null(eventcodes)) {
      eventcodes <- bind_rows(eventcodes, data_frame(event = "Variable", code = -1))
      Farray_pattern <- c(
-       (eventcodes %>% filter(event == "On_WriteVariables"))$code,
-       (eventcodes %>% filter(event == "Off_WriteVariables"))$code
+       (filter(eventcodes, event == "On_WriteVariables"))$code,
+       (filter(eventcodes, event == "Off_WriteVariables"))$code
      )
      df %<>%
        dplyr::group_by(subject, date) %>%
        dplyr::mutate(on_write = trialdef(possible_event, Farray_pattern, fromfirst = TRUE)) %>%
        dplyr::group_by(subject, date, on_write) %>%
        dplyr::mutate(index = 1:n(),
-              between_variable = ifelse((on_write > 0) & (index != 1) & (index != n()),
-                                        TRUE, FALSE),
-              variable = ifelse(between_variable, raw, NA),
-              possible_event = ifelse(between_variable, -1, possible_event)) %>%
+                     between_variable = ifelse((on_write > 0) & (1 < index) & (index < n()),
+                                               TRUE, FALSE),
+                     variable = ifelse(between_variable, raw, NA),
+                     variable_name = ifelse(between_variable, variable_names[lag(index)], NA),
+                     possible_time = ifelse(between_variable, NA, possible_time),
+                     possible_event = ifelse(between_variable, -1, possible_event)) %>%
        dplyr::ungroup()
    } # if
 
@@ -144,7 +146,7 @@ mpc_tidy <- function(df, resolution = 0.01, eventcodes = NULL, files = NULL) {
   }
 
   if ("variable" %in% colnames(df)) {
-    df <- dplyr::select(df, subject, box, date, time, event, variable)
+    df <- dplyr::select(df, subject, box, date, time, event, variable_name, variable)
   } else {
     df <- dplyr::select(df, subject, box, date, time, event)
   }

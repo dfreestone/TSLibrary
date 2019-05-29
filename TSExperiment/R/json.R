@@ -9,6 +9,36 @@
 # Description:
 #
 
+#' @param df A single data frame (from a single subject/day)
+#' @return A list ready for jsonification
+#' @importFrom magrittr %>%
+#' @export
+#' @examples
+UpdateJson <- function(data, files, jsonfile) {
+
+  json <- jsonlite::read_json(jsonfile, simplifyVector = TRUE)
+
+  # Any column that's not a number should be a factor
+  df <- data %>%
+    mutate_if(~!is.numeric(.), factor)
+
+  json$data <- list(files = files,
+                    data = df)
+
+  json$data_factors <- df %>%
+    select_if(is.factor) %>%
+    map(function(x){list(name = as.character(unique(x)),
+                         code = as.numeric(unique(x)))})
+
+  jsonlite::write_json(json,
+                       path = jsonfile,
+                       dataframe = 'columns',
+                       factor = 'integer',
+                       pretty = TRUE)
+
+  data
+}
+
 #' Return a list of the data ready for json
 #'
 #' @param df A single data frame (from a single subject/day)
@@ -77,8 +107,6 @@ NextArchive <- function(mpcpath){
 #' @examples
 ArchiveMPC <- function(mpcpath){
   archive_number = NextArchive(mpcpath)
-
-  #jsonpath = file.path(dirname(mpcpath), "json")
 
   current_filenames = Sys.glob(file.path(mpcpath, "*.999"))
   new_filenames = current_filenames %>%

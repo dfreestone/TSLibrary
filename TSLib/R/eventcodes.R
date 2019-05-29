@@ -6,8 +6,7 @@
 #' @examples
 read_eventcodes = function(Files)
 {
-  require(dplyr)
-  bind_rows(lapply(Files, read_eventcode))
+  purrr::map_df(Files, read_eventcode)
 }
 
 #' Load a single file of event codes
@@ -18,8 +17,12 @@ read_eventcodes = function(Files)
 #' @examples
 read_eventcode = function(File)
 {
-  require(readr)
-  read_csv(File, col_names=c("event", "code"), col_types="ci")
+  # 04.10.2019 DMF: Updated to allow for either csv or tsv
+  if (endsWith(File, '.csv')) {
+    df <- readr::read_csv(File, col_names=c("event", "code"), col_types="ci")
+  } else {
+    df <- readr::read_tsv(File, col_names=c("event", "code"), col_types="ci")
+  }
 }
 
 #' Convert numeric event codes to named event codes

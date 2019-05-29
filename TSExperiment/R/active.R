@@ -82,7 +82,6 @@ ExperimentPath <- function(experiment){
 #' @export
 #' @examples
 ActiveExperiments <- function(){
-  needs(magrittr)
   dropbox = file.path(DropBoxPaths()$LocalActiveExperimentPath, "experiments")
 
   active_experiments = Sys.glob(file.path(dropbox, "*", "ACTIVE.txt"))
@@ -146,7 +145,7 @@ ActiveExperiments <- function(){
 ReadConditionsFile <- function(File){
   require(readr)
   require(dplyr)
-  df = suppressMessages(read_csv(File, skip=0)) %>%
+  df = suppressMessages(read_tsv(File, skip=0)) %>%
     mutate(expt = basename(dirname(dirname(File))))
   return(df)
 }
@@ -164,7 +163,7 @@ ActiveConditions <- function(){
   active_experiments = Sys.glob(file.path(dropbox, "*", "ACTIVE.txt")) %>%
     dirname()
 
-  conditions = Sys.glob(file.path(active_experiments, "experiment", "*_conditions.csv")) %>%
+  conditions = Sys.glob(file.path(active_experiments, "experiment", "*_conditions.txt")) %>%
     lapply(ReadConditionsFile) %>%
     bind_rows()
 
