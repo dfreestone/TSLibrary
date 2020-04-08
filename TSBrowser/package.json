@@ -1,0 +1,20 @@
+{
+  "name": "tsbrowser",
+  "version": "1.0.0",
+  "description": "Browser for user checks of colony",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "tslib",
+    "behavior"
+  ],
+  "author": "David M. Freestone",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nedb": "^1.8.0"
+  }
+}

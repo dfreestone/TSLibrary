@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>TSBrowser</title>
+
+    <!--
+        <link href="jspsych-health.css" rel="stylesheet" type="text/css">
+        <script src="jspsych-health-functions.js"></script>>
+        -->
+</head>
+
+
+<body onload="process_page('load')">
+
+    <script>
+
+    var user = null;
+
+        // maybe its a good idea to set up all the boxes we'll need, and then just display or don't display them?
+        body = {
+            login: {
+                buttons: 'login',
+                input: ['passcode', 'user']
+            },
+
+            menu: {
+                buttons: ['clean', 'fix', 'health', 'supplies', 'experiment'],
+                input: null
+            },
+
+            clean: {
+                buttons: ['sweep', 'dust', 'other'],
+                input: null
+            }
+
+
+        };
+
+        function create_button(name) {
+            name = Array.isArray(name) ? name : [name];
+
+            name.map(nm => {
+                let btn = document.createElement("BUTTON");
+                document.body.appendChild(btn);
+
+                btn.setAttribute("style", "display:'initial';font-size:1em");
+                btn.id = nm;
+                btn.textContent = nm;
+                btn.onclick = function () {
+                    process_button(nm, this);
+                };
+            });
+        }
+
+        function create_input(name) {
+            name = Array.isArray(name) ? name : [name];
+
+            name.map(nm => {
+                let input = document.createElement("input");
+                input.setAttribute('type', 'text');
+                input.setAttribute("style", "display:'initial';font-size:1em");
+                input.id = nm;
+                input.value = nm;
+                document.body.appendChild(input);
+            })
+        }
+
+        function destroy_button(name) {
+            if (name == null) return(null);
+
+            name = Array.isArray(name) ? name : [name];
+            name.map(nm => { document.getElementById(nm).remove() });
+        }
+
+        function destroy_input(name) {
+            if (name == null) return(null);
+
+            name = Array.isArray(name) ? name : [name];
+            name.map(nm => { document.getElementById(nm).remove() });
+        }
+
+        async function request_passcode() {
+            const data = { type: 'request_passcode' };
+
+            const options = {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' }
+            }
+
+            const response = await fetch('/api', options);
+            success = await response.json(); // We don't actually send back the passcode...
+
+            console.log(success);
+        }
+
+            async function process_button(current_button) {
+                // TODO(David): Implement the 'back' button
+                // TODO(David): Should really find a more dynamic way of destroying buttons
+                //              since we should want to destroy the buttons leading to "menu"
+                //              regardless of which buttons we came from...
+                switch (current_button) {
+                    case 'login':
+                        // TODO(David): Make sure initials makes sense.
+                        //             Send to server for password checking
+                        data = {
+                            type: 'login_attempt',
+                            user_passcode: document.getElementById('passcode').value,
+                            user: document.getElementById('user').value
+                        };
+                        user = data.user;
+
+                        console.log(data);
+
+                        options = {
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            headers: { 'Content-Type': 'application/json' }
+                        }
+
+                        response = await fetch('/api', options);
+                        login_state = await response.json();
+                        console.log(login_state);
+
+                        if (login_state.success) {
+                            destroy_button(body.login.buttons);
+                            destroy_input(body.login.input);
+                            process_page('menu');
+                        } else {
+                            alert("incorrect login");
+                        }
+                        break;
+
+                    case 'clean':
+                        destroy_button(body.menu.buttons);
+                        destroy_input(body.menu.input);
+                        process_page('clean');
+                        break;
+
+                    case 'sweep':
+                        destroy_button(body.clean.buttons);
+                        destroy_input(body.clean.input);
+                        process_page('sweep');
+                        data = {
+                            type: 'user_event',
+                            event: 'sweep',
+                            user: user
+                        };
+
+                        options = {
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            headers: { 'Content-Type': 'application/json' }
+                        }
+
+                        response = await fetch('/api', options);
+                        result = await response.json();
+                        break;
+                }
+            }
+
+        function process_page(current_page) {
+            switch (current_page) {
+
+                // When the page is loaded
+                case 'load':
+                    // TODO(David): Query server database for whether we should
+                    //               sweep, clean cages, change water, etc.
+                    request_passcode();
+                    process_page('login');
+                    break;
+
+                // when they click login
+                case 'login':
+                    create_input(body.login.input);
+                    create_button(body.login.buttons);
+                    break;
+
+                case 'menu': // TODO(David): rename
+                    create_button(body.menu.buttons);
+                    break;
+
+                case 'clean':
+                    create_button(body.clean.buttons);
+                    break;
+
+                case 'sweep':  
+                    process_page('menu');
+                    break;
+
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
